@@ -7,6 +7,9 @@
             canvas{
                 border: 1px solid black;
             }
+            .hidden{
+                display: none;
+            }
             .button {
                 border: 1px solid black;
                 padding: 15px;
@@ -17,8 +20,8 @@
            
         </style>
         <script type="text/javascript">
-let OFFSET_X = 20;
-let OFFSET_Y = 5;
+let OFFSET_X = 0;
+let OFFSET_Y = 0;
 
 var CELL_SIZE = 15;
 
@@ -83,7 +86,6 @@ function checkFullLines(){
     if(toKill.length){
         var deltaScore = 100 * toKill.length + (toKill.length - 1) * (toKill.length - 1) * 100;
         addScore(deltaScore);
-        document.getElementById('dscore').innerHTML = '+ ' + deltaScore;
         // console.log('+ ' + deltaScore);
         paused = true;
         setTimeout(function(){
@@ -95,7 +97,6 @@ function checkFullLines(){
             }
             toKill = [];
             render();
-            document.getElementById('dscore').innerHTML = '';
             paused = false;
         }, 150);    
     }
@@ -252,6 +253,10 @@ function resume(){
 
 
 function step(){
+    if(OVER){
+        return;
+    }
+
     drawStatus(paused ? 'paused' : 'playing');
 
     if(paused){
@@ -263,7 +268,6 @@ function step(){
 /**
  * INPUT
  */
-var action = '';
 function handleKey(evt){
   //console.log(evt);
     switch(evt.keyCode){
@@ -369,18 +373,31 @@ function drawStatus(str){
     ctx.fillText(str, OFFSET_X + 10.5 * CELL_SIZE, 8 * CELL_SIZE); 
 }
 
+function drawScore(str){
+    var canvas = document.getElementById("canvas");
+    var ctx = canvas.getContext("2d");
+    ctx.clearRect(OFFSET_X + 10 * CELL_SIZE + 1, 11 * CELL_SIZE, 150, -30);
+    ctx.font = "15px Arial";
+    ctx.fillStyle = '#000000';
+    ctx.fillText('score: ' + str, OFFSET_X + 10.5 * CELL_SIZE, 10 * CELL_SIZE); 
+}
+
 function addScore(d){
     score += d;
-    document.getElementById('score').innerHTML = score;
+    drawScore(score);
 }
 
         </script>
     </head>
     <body onload="start()" onkeydown="handleKey(event)">
-        <!-- <span id="t"></span><br> -->
-        <canvas width="350" height="620" id="canvas"></canvas>
+        <!-- LOAD ASSETS HERE -->
+        <div class="hidden">
+            <img src="reset.png">
+        </div>
+
+        <canvas width="350" height="530" id="canvas"></canvas>
         <br><button onclick="start(true)">reset</button>
-        <span id="status">playing</span>  | score = <span id="score">0</span><span id="dscore"></span>
+        | score = <span id="score">0</span><span id="dscore"></span>
 
     <script type="text/javascript">
 const CONTROLS_TICK_INTERVAL = 300;
@@ -426,7 +443,7 @@ function renderControl(ux, uy, rotCol, rightCol, downCol, leftCol){
     ctx.lineWidth = 1;
     drawCircle(controlsCenter.x, controlsCenter.y, r, ctx);
     ctx.closePath();
-    ctx.stroke();
+    ctx.stroke();2.333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333337
 
     drawSector(controlsCenter.x, controlsCenter.y, r, 25, 0, rotCol, ctx);
     drawSector(controlsCenter.x, controlsCenter.y, r, 25, 0.5, rightCol, ctx);
@@ -447,6 +464,26 @@ let r = 75;
 
 
 // can.addEventListener('click', checkControls);
+function checkDown(evt){
+    let x = evt.clientX - rect.left;
+    let y = evt.clientY - rect.top;
+    onDown(x, y);
+}
+function checkTouchDown(evt){
+    let x = evt.touches[0].clientX - rect.left;
+    let y = evt.touches[0].clientY - rect.top;
+    onDown(x, y);
+}
+function onDown(x, y){
+    let cx = x - controlsCenter.x;
+    let cy = y - controlsCenter.y;
+    let dist = Math.sqrt(cx * cx + cy * cy);
+    if(dist < r){
+        resume();
+    }
+}
+
+
 function touchControls(evt){
     evt.preventDefault();
 
@@ -509,8 +546,8 @@ function processUserMove(x, y){
 can.addEventListener('mousemove', checkControls);
 can.addEventListener('touchmove', touchControls);
 
-can.addEventListener('touchstart', resume);
-can.addEventListener('mousedown', resume);
+can.addEventListener('touchstart', checkTouchDown);
+can.addEventListener('mousedown', checkDown);
 
 can.addEventListener('touchend', pause);
 can.addEventListener('mouseup', pause);
