@@ -20,6 +20,8 @@
 let OFFSET_X = 20;
 let OFFSET_Y = 5;
 
+let OVER = false;
+
 //point class
 function Point(x, y){
     this.x = x;
@@ -150,7 +152,8 @@ function spawnTetr(){
     pColor = nextOne.color;
     if(!allowTetr(globalTetrPosition(points))){
         paused = true;
-        document.getElementById('status').innerHTML = 'GAME OVER';
+        drawStatus('GAME OVER');
+        OVER = true;
         render();
     }else{
         createNew();
@@ -224,7 +227,8 @@ function start(re){
     window.clearInterval(intervalID);
     initFieldPoints();
     // paused = false;
-    document.getElementById('status').innerHTML = 'playing';
+    OVER = false;
+    drawStatus('playing');
     addScore(-score);
     // nextOne = {color: '', points: []};
     spawnTetr();
@@ -246,7 +250,7 @@ function resume(){
 
 
 function step(){
-    document.getElementById('status').innerHTML = paused ? 'paused' : 'playing';
+    drawStatus(paused ? 'paused' : 'playing');
 
     if(paused){
         return;
@@ -354,6 +358,15 @@ function renderNew(){
     graphicsRender(graphics);
 }
 
+function drawStatus(str){
+    var canvas = document.getElementById("canvas");
+    var ctx = canvas.getContext("2d");
+    ctx.clearRect(OFFSET_X + 10 * CELL_SIZE + 1, 9 * CELL_SIZE, 150, -50);
+    ctx.font = "15px Arial";
+    ctx.fillStyle = '#000000';
+    ctx.fillText(str, OFFSET_X + 10.5 * CELL_SIZE, 8 * CELL_SIZE); 
+}
+
 function addScore(d){
     score += d;
     document.getElementById('score').innerHTML = score;
@@ -362,18 +375,10 @@ function addScore(d){
         </script>
     </head>
     <body onload="start()" onkeydown="handleKey(event)">
-        erserserer<canvas width="350" height="620" id="canvas"></canvas>
-        <button onclick="start(true)">reset</button>
-        <span id="status">playing</span>  | score = <span id="score">0</span><span id="dscore"></span> <button onclick="togglePaused()">ESC (pause)</button>
-        <div style="clear:both;">      
-      <button class="button" onclick="rotate()">↑ (rotate)</button><button class="button" onclick="drop()">SPACE (drop)</button>
+        <canvas width="350" height="620" id="canvas"></canvas>
+        <br><button onclick="start(true)">reset</button>
+        <span id="status">playing</span>  | score = <span id="score">0</span><span id="dscore"></span>
 
-            <button class="button" onclick="move(-1)">←</button>     
-            <button class="button" onclick="down()">↓</button>     
-            <button class="button" onclick="move(1)">→</button>
-            
-    </div>
-    <div id='test'></div>
     <script type="text/javascript">
 const CONTROLS_TICK_INTERVAL = 300;
 let ACTION = '';
@@ -440,6 +445,8 @@ let r = 75;
 
 // can.addEventListener('click', checkControls);
 function checkControls(evt){
+    evt.preventDefault();
+
     let x = evt.clientX - rect.left - controlsCenter.x;
     let y = evt.clientY - rect.top - controlsCenter.y;
 /*
@@ -455,24 +462,32 @@ if(!paused)drop();//drop
     let leftCol = '#ffffaa';
     let dist = Math.sqrt(x * x + y * y);
     if(dist < r){
-        console.log(x, y);
+        let instant = false;
         if(Math.abs(y) > Math.abs(x) && dist > 28 && y < 0){
-            if(!paused) ACTION = 'rotate';//rotate
+            if(ACTION != 'rotate') instant = true;
+            ACTION = 'rotate';//rotate
             rotCol = '#00ff00';
         }else if(Math.abs(y) < Math.abs(x) && dist > 28 && x > 0){
-            if(!paused) ACTION = 'right';//right
+            if(ACTION != 'right') instant = true;
+            ACTION = 'right';//right
             rightCol = '#ff0000';
         }else if(Math.abs(y) > Math.abs(x) && dist > 28 && y > 0){
-            if(!paused) ACTION = 'down';//down
+            if(ACTION != 'down') instant = true;
+            ACTION = 'down';//down
             downCol = '#00ff00';
         }else if(Math.abs(y) < Math.abs(x) && dist > 28 && x < 0){
-            if(!paused) ACTION = 'left';//left
+            if(ACTION != 'left') instant = true;
+            ACTION = 'left';//left
             leftCol = '#ffff00';
         }else{
             ACTION = ''
         }
 
         renderControl(x, y, rotCol, rightCol, downCol, leftCol);
+
+        if(instant){
+            controlsTick();
+        }
     }
 }
 
