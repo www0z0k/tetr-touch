@@ -375,6 +375,7 @@ function addScore(d){
         </script>
     </head>
     <body onload="start()" onkeydown="handleKey(event)">
+        <span id="t"></span><br>
         <canvas width="350" height="620" id="canvas"></canvas>
         <br><button onclick="start(true)">reset</button>
         <span id="status">playing</span>  | score = <span id="score">0</span><span id="dscore"></span>
@@ -449,6 +450,7 @@ function touchControls(evt){
 
     let x = evt.touches[0].clientX - rect.left - controlsCenter.x;
     let y = evt.touches[0].clientY - rect.top - controlsCenter.y;
+    document.getElementById('t').innerHTML = `${x}, ${y}`;
     processUserMove(x, y);
 }
 
