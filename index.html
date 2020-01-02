@@ -1,0 +1,499 @@
+<html>
+    <head>
+        <title>TETRIS - FIRST PLAYABLE</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            canvas{
+                border: 1px solid black;
+            }
+            .button {
+                border: 1px solid black;
+                padding: 15px;
+                border-radius:10px;
+                font-size: 16px;
+                cursor: pointer;
+            }
+           
+        </style>
+        <script type="text/javascript">
+let OFFSET_X = 20;
+let OFFSET_Y = 5;
+
+//point class
+function Point(x, y){
+    this.x = x;
+    this.y = y;
+}
+Point.prototype = { x : 0, y : 0, constructor : Point};
+//tetrs theory
+var MODELS = ['L', 'J', 'O', 'I', 'Z', 'S', 'T'];
+var CONFIGS = {
+    'L' : [new Point(0, -2), new Point(0, -1), new Point(0, 0), new Point(1, 0)],
+    'J' : [new Point(0, -2), new Point(0, -1), new Point(0, 0), new Point(-1, 0)],
+    'O' : [new Point(0, -1), new Point(1, -1), new Point(1, 0), new Point(0, 0)],
+    'I' : [new Point(0, -2), new Point(0, -1), new Point(0, 0), new Point(0, 1)],
+    'Z' : [new Point(-1, -1), new Point(0, -1), new Point(0, 0), new Point(1, 0)],
+    'S' : [new Point(1, -1), new Point(0, -1), new Point(0, 0), new Point(-1, 0)],
+    'T' : [new Point(-1, 0), new Point(0, 0), new Point(1, 0), new Point(0, 1)]
+};
+var COLORS = ['#ff00ff', '#ff0000', '#00ff00', '#0000ff', '#ffff00'];
+function randomColor(){
+    return COLORS[Math.floor(Math.random() * COLORS.length)];
+}
+function getRandomTetr(){
+    return CONFIGS[MODELS[Math.floor(Math.random() * MODELS.length)]];
+}
+//field statics
+//field 10x20
+//access fieldPoints[y][x]
+var EMPTY = '#c0c0c0';
+var DEAD = '#ffffff';
+var CELL_SIZE = 20;
+function getEmptyLine(){//10 empty (white) cells
+    return [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY];
+}
+function isLineFull(arr){
+    for(var i = 0; i < arr.length; i++){
+        if(arr[i] == EMPTY){
+            return false;
+        }
+    }
+    return true;
+}
+function paintFullLine(arr){
+    for(var i = 0; i < arr.length; i++){   
+        arr[i] = DEAD;
+    }
+}
+var score = 0;
+function checkFullLines(){
+    var toKill = [];
+    for(var i = fieldPoints.length - 1; i >= 0; i--){
+        if(isLineFull(fieldPoints[i])){
+            toKill.push(i);
+            paintFullLine(fieldPoints[i]);
+        }
+    }
+    render();
+    if(toKill.length){
+        var deltaScore = 100 * toKill.length + (toKill.length - 1) * (toKill.length - 1) * 100;
+        addScore(deltaScore);
+        document.getElementById('dscore').innerHTML = '+ ' + deltaScore;
+        // console.log('+ ' + deltaScore);
+        paused = true;
+        setTimeout(function(){
+            for(var k = 0; k < toKill.length; k++){
+                fieldPoints.splice(toKill[k], 1);
+            }
+            for(var k = 0; k < toKill.length; k++){
+                fieldPoints.unshift(getEmptyLine());
+            }
+            toKill = [];
+            render();
+            document.getElementById('dscore').innerHTML = '';
+            paused = false;
+        }, 150);    
+    }
+}
+var fieldPoints = [];
+function initFieldPoints(){
+    fieldPoints = [];
+    for(var i = 0; i < 22; i++){
+        fieldPoints.push(getEmptyLine());
+    }
+}
+function isPointFree(x, y){
+    if(!fieldPoints[y]){
+        return false;
+    }
+    if(!fieldPoints[y][x]){
+        return false;
+    }
+    return fieldPoints[y][x] == EMPTY;
+}
+function allowTetr(arr){
+    for(var i = 0; i < arr.length; i++){
+        if(!isPointFree(arr[i].x, arr[i].y)){
+            return false;
+        }
+    }
+    return true;
+}
+function addPoint(x, y, color){
+    fieldPoints[y][x] = color;
+}
+//current tetr
+var angle = 0;
+var x = 4;
+var y = 2;
+var points = [];
+var pColor = '#0000ff';
+
+//next one
+var nextOne = {color: '', points: []};
+function createNew(){
+    nextOne.points = getRandomTetr();
+    nextOne.color = randomColor();
+
+    renderNew();
+}
+
+function spawnTetr(){
+    if(!nextOne.color){
+        createNew();
+    }
+    points = nextOne.points.slice();
+    angle = 0;
+    x = 4 + Math.round(Math.random());
+    y = 2;
+    pColor = nextOne.color;
+    if(!allowTetr(globalTetrPosition(points))){
+        paused = true;
+        document.getElementById('status').innerHTML = 'GAME OVER';
+        render();
+    }else{
+        createNew();
+    }
+}
+function rotate(){
+    var a = angle + 90 > 270 ? 0 : angle + 90;
+    var arr = [];
+    if(a == 90 || a == 270){
+        for(var i = 0; i < points.length; i++){
+            arr[i] = new Point(-points[i].y, points[i].x);
+        }
+    }else{
+        for(var i = 0; i < points.length; i++){
+            arr[i] = new Point(-points[i].y, points[i].x);
+        }
+    }
+    //check
+    if(allowTetr(globalTetrPosition(arr))){
+        angle = a;
+        points = arr;
+    }
+}
+function move(d){
+    //check
+    if(allowTetr(globalTetrPosition(points, d))){
+        x += d;
+    }
+}
+/**
+ * 
+ * @returns {boolean - can move further down}
+ */
+function down(){
+    //check
+    if(allowTetr(globalTetrPosition(points, 0, 1))){
+        ++y;
+        return true;
+    }
+    die();
+    checkFullLines();
+    spawnTetr();
+    return false;
+}
+function drop(){
+    while(down()){
+        
+    }
+}
+function die(){
+    var arr = globalTetrPosition(points);
+    for(var i = 0; i < arr.length; i++){
+        addPoint(arr[i].x, arr[i].y, pColor);
+    }
+}
+function globalTetrPosition(arr, dx, dy){
+    dx = dx || 0;
+    dy = dy || 0;
+    var res = [];
+    for(var i = 0; i < arr.length; i++){
+        res[i] = new Point(arr[i].x + x + dx, arr[i].y + y + dy);
+    }
+    return res;
+}
+/**
+ * GAMEPLAY
+ */
+//var glass;
+var intervalID = '';
+function start(re){
+    window.clearInterval(intervalID);
+    initFieldPoints();
+    // paused = false;
+    document.getElementById('status').innerHTML = 'playing';
+    addScore(-score);
+    // nextOne = {color: '', points: []};
+    spawnTetr();
+    intervalID = window.setInterval(step, 600);
+    render();
+}
+var paused = true;
+function togglePaused(){
+    paused = !paused;
+}
+
+function pause(){
+    paused = true;
+}
+
+function resume(){
+    paused = false;
+}
+
+
+function step(){
+    document.getElementById('status').innerHTML = paused ? 'paused' : 'playing';
+
+    if(paused){
+        return;
+    }
+    down();
+    render();
+}
+/**
+ * INPUT
+ */
+var action = '';
+function handleKey(evt){
+  //console.log(evt);
+    switch(evt.keyCode){
+        case 37://left
+            if(!paused)move(-1);
+        break;
+        case 39://right
+            if(!paused)move(1);
+        break;
+        case 38://up
+            if(!paused)rotate();
+        break;
+        case 40://down
+            if(!paused)down();
+        break;
+        case 32://space
+            if(!paused)drop();
+        break;
+        case 27://escape
+            togglePaused();
+        break;
+    }
+    evt.preventDefault();
+    evt.stopImmediatePropagation();
+    render();
+}
+/**
+ * RENDER
+ */
+function drawRect(gr, x, y, w, h){
+    gr.fillRect(x, y, w, h);
+    gr.strokeRect(x, y, w, h);    
+}
+function pathRect(gr, x, y, w, h){
+    gr.moveTo(x, y);
+    gr.lineTo(x + w, y);
+    gr.lineTo(x + w, y + h);
+    gr.lineTo(x, y + h);
+    gr.lineTo(x, y);    
+}
+function graphicsRender(gr){
+    gr.fill();
+    gr.stroke();
+}
+function render(){
+    //PRE - RENDER
+    var currentPos = globalTetrPosition(points);
+    var colors = {};
+    for(var i = 0; i < 22; i++){//y
+        for(var k = 0; k < 10; k++){//x
+            if(!colors[fieldPoints[i][k]]){
+                colors[fieldPoints[i][k]] = [];
+            }
+            colors[fieldPoints[i][k]].push(new Point(k, i));
+        }
+    }
+    for(var c = 0; c < currentPos.length; c++){
+        if(!colors[pColor]){
+            colors[pColor] = [];
+        }
+        colors[pColor].push(new Point(currentPos[c].x, currentPos[c].y));
+    }
+
+    //RENDER
+    var can = document.getElementById('canvas');
+    var graphics = can.getContext('2d');
+    graphics.clearRect(OFFSET_X, OFFSET_Y, 10 * CELL_SIZE, 22 * CELL_SIZE);
+    graphics.strokeStyle = "#000000";
+    graphics.lineWidth = 1;
+    for(var k in colors){
+        graphics.beginPath();
+        graphics.fillStyle = k;
+        for(var i = 0; i < colors[k].length; i++){
+            pathRect(graphics, OFFSET_X + colors[k][i].x * CELL_SIZE, OFFSET_Y + colors[k][i].y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        }
+        graphicsRender(graphics);
+    }
+}
+
+function renderNew(){
+    var can = document.getElementById('canvas');
+    var graphics = can.getContext('2d');
+    var startX = OFFSET_X + 11 * CELL_SIZE;
+    var startY = OFFSET_Y + CELL_SIZE;
+    graphics.clearRect(startX, startY - 2, 4 * CELL_SIZE, 6 * CELL_SIZE);
+    graphics.strokeStyle = "#000000";
+    graphics.lineWidth = 2;
+    graphics.beginPath();
+    graphics.fillStyle = nextOne.color;
+
+    for (var i = 0; i < nextOne.points.length; i++) {
+        pathRect(graphics, 5 + startX + (nextOne.points[i].x + 1) * CELL_SIZE, (nextOne.points[i].y + 2) * CELL_SIZE + startY, CELL_SIZE, CELL_SIZE);
+    }
+    graphicsRender(graphics);
+}
+
+function addScore(d){
+    score += d;
+    document.getElementById('score').innerHTML = score;
+}
+
+        </script>
+    </head>
+    <body onload="start()" onkeydown="handleKey(event)">
+        erserserer<canvas width="350" height="620" id="canvas"></canvas>
+        <button onclick="start(true)">reset</button>
+        <span id="status">playing</span>  | score = <span id="score">0</span><span id="dscore"></span> <button onclick="togglePaused()">ESC (pause)</button>
+        <div style="clear:both;">      
+      <button class="button" onclick="rotate()">↑ (rotate)</button><button class="button" onclick="drop()">SPACE (drop)</button>
+
+            <button class="button" onclick="move(-1)">←</button>     
+            <button class="button" onclick="down()">↓</button>     
+            <button class="button" onclick="move(1)">→</button>
+            
+    </div>
+    <div id='test'></div>
+    <script type="text/javascript">
+const CONTROLS_TICK_INTERVAL = 300;
+let ACTION = '';
+function controlsTick(){
+    if(paused)return;
+
+    if(ACTION){
+        switch(ACTION){
+            case 'left': move(-1); break;
+            case 'right': move(1); break;
+            case 'rotate': rotate(); break;
+            case 'down': down(); break;
+        }
+        render();
+    }
+}
+
+
+let can = document.getElementById('canvas');
+let ctx = can.getContext('2d');
+let rect = can.getBoundingClientRect();
+
+function drawCircle(x, y, radius, ctx){
+    ctx.arc(x, y, radius, 0, 2 * Math.PI);
+}
+
+function drawSector(x, y, r1, r2, turn, col, ctx){
+    ctx.beginPath();
+    ctx.fillStyle = col;
+    ctx.arc(x, y, r1, -0.73 * Math.PI + turn * Math.PI, -0.28 * Math.PI + turn * Math.PI);
+    ctx.arc(x, y, r2, -0.30 * Math.PI + turn * Math.PI, -0.7 * Math.PI + turn * Math.PI, true);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.fill();
+}
+
+function renderControl(ux, uy, rotCol, rightCol, downCol, leftCol){
+    ctx.clearRect(controlsCenter.x - 76 - 10, controlsCenter.y - 76 - 10, r * 2 + 2 + 20, r * 2 + 2 + 20);
+
+    ctx.beginPath();
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = 1;
+    drawCircle(controlsCenter.x, controlsCenter.y, r, ctx);
+    ctx.closePath();
+    ctx.stroke();
+
+    drawSector(controlsCenter.x, controlsCenter.y, r, 25, 0, rotCol, ctx);
+    drawSector(controlsCenter.x, controlsCenter.y, r, 25, 0.5, rightCol, ctx);
+    drawSector(controlsCenter.x, controlsCenter.y, r, 25, 1, downCol, ctx);
+    drawSector(controlsCenter.x, controlsCenter.y, r, 25, 1.5, leftCol, ctx);
+
+
+    ctx.beginPath();
+    ctx.fillStyle = '#ff00ff';
+    drawCircle(controlsCenter.x + ux, controlsCenter.y + uy, 10, ctx);
+    ctx.stroke();
+    ctx.fill();
+}
+
+
+let controlsCenter = new Point(can.width / 2, 22 * CELL_SIZE + 20 + 75);
+let r = 75;
+
+
+// can.addEventListener('click', checkControls);
+function checkControls(evt){
+    let x = evt.clientX - rect.left - controlsCenter.x;
+    let y = evt.clientY - rect.top - controlsCenter.y;
+/*
+if(!paused)move(-1);//left
+if(!paused)move(1);//right
+if(!paused)rotate();//rotate
+if(!paused)down();//down
+if(!paused)drop();//drop
+*/
+    let rotCol = '#aaffaa';
+    let rightCol = '#ffaaaa';
+    let downCol = '#aaaaff';
+    let leftCol = '#ffffaa';
+    let dist = Math.sqrt(x * x + y * y);
+    if(dist < r){
+        console.log(x, y);
+        if(Math.abs(y) > Math.abs(x) && dist > 28 && y < 0){
+            if(!paused) ACTION = 'rotate';//rotate
+            rotCol = '#00ff00';
+        }else if(Math.abs(y) < Math.abs(x) && dist > 28 && x > 0){
+            if(!paused) ACTION = 'right';//right
+            rightCol = '#ff0000';
+        }else if(Math.abs(y) > Math.abs(x) && dist > 28 && y > 0){
+            if(!paused) ACTION = 'down';//down
+            downCol = '#00ff00';
+        }else if(Math.abs(y) < Math.abs(x) && dist > 28 && x < 0){
+            if(!paused) ACTION = 'left';//left
+            leftCol = '#ffff00';
+        }else{
+            ACTION = ''
+        }
+
+        renderControl(x, y, rotCol, rightCol, downCol, leftCol);
+    }
+}
+
+can.addEventListener('mousemove', checkControls);
+can.addEventListener('touchmove', checkControls);
+
+can.addEventListener('touchstart', resume);
+can.addEventListener('mousedown', resume);
+
+can.addEventListener('touchend', pause);
+can.addEventListener('mouseup', pause);
+
+
+document.querySelectorAll("button").forEach( function(item) {
+    item.addEventListener('focus', function() {
+        this.blur();
+    })
+})
+
+setInterval(controlsTick, CONTROLS_TICK_INTERVAL);
+
+    </script>
+    </body>
+</html>
