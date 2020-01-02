@@ -385,14 +385,14 @@ function addScore(d){
     <script type="text/javascript">
 const CONTROLS_TICK_INTERVAL = 300;
 let ACTION = '';
-function controlsTick(){
+function controlsTick(instant){
     if(paused)return;
 
     if(ACTION){
         switch(ACTION){
             case 'left': move(-1); break;
             case 'right': move(1); break;
-            case 'rotate': rotate(); break;
+            case 'rotate': if(instant)rotate(); break;
             case 'down': down(); break;
         }
         render();
@@ -501,7 +501,7 @@ function processUserMove(x, y){
         renderControl(x, y, rotCol, rightCol, downCol, leftCol);
 
         if(instant){
-            controlsTick();
+            controlsTick(true);
         }
     }
 }
