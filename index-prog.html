@@ -44,7 +44,7 @@ var CONFIGS = {
     'S' : [new Point(1, -1), new Point(0, -1), new Point(0, 0), new Point(-1, 0)],
     'T' : [new Point(-1, 0), new Point(0, 0), new Point(1, 0), new Point(0, 1)]
 };
-var COLORS = ['i-1', 'i-2', 'i-3'];
+var COLORS = ['#ff00ff', '#ff0000', '#00ff00', '#0000ff', '#ffff00'];
 function randomColor(){
     return COLORS[Math.floor(Math.random() * COLORS.length)];
 }
@@ -133,7 +133,7 @@ var angle = 0;
 var x = 4;
 var y = 2;
 var points = [];
-var pColor = '';
+var pColor = '#0000ff';
 
 //next one
 var nextOne = {color: '', points: []};
@@ -299,10 +299,6 @@ function handleKey(evt){
 /**
  * RENDER
  */
-function getTexture(id){
-    return document.getElementById(id);
-}
-
 function drawRect(gr, x, y, w, h){
     gr.fillRect(x, y, w, h);
     gr.strokeRect(x, y, w, h);    
@@ -347,11 +343,7 @@ function render(){
         graphics.beginPath();
         graphics.fillStyle = k;
         for(var i = 0; i < colors[k].length; i++){
-            if(k == EMPTY || k == '#ffffff'){
-                pathRect(graphics, OFFSET_X + colors[k][i].x * CELL_SIZE, OFFSET_Y + colors[k][i].y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-            }else{
-                graphics.drawImage(getTexture(k), OFFSET_X + colors[k][i].x * CELL_SIZE, OFFSET_Y + colors[k][i].y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-            }
+            pathRect(graphics, OFFSET_X + colors[k][i].x * CELL_SIZE, OFFSET_Y + colors[k][i].y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
         }
         graphicsRender(graphics);
     }
@@ -366,10 +358,10 @@ function renderNew(){
     graphics.strokeStyle = "#000000";
     graphics.lineWidth = 2;
     graphics.beginPath();
-    // graphics.fillStyle =
+    graphics.fillStyle = nextOne.color;
 
     for (var i = 0; i < nextOne.points.length; i++) {
-        graphics.drawImage(getTexture(nextOne.color), 5 + startX + (nextOne.points[i].x + 1) * CELL_SIZE, (nextOne.points[i].y + 2) * CELL_SIZE + startY, CELL_SIZE, CELL_SIZE);
+        pathRect(graphics, 5 + startX + (nextOne.points[i].x + 1) * CELL_SIZE, (nextOne.points[i].y + 2) * CELL_SIZE + startY, CELL_SIZE, CELL_SIZE);
     }
     graphicsRender(graphics);
 }
@@ -403,9 +395,6 @@ function addScore(d){
         <!-- LOAD ASSETS HERE -->
         <div class="hidden">
             <img id="reset-img" src="reset.png">
-            <img id="i-1" src="img/1.png">
-            <img id="i-2" src="img/2.png">
-            <img id="i-3" src="img/3.png">
         </div>
 
         <canvas width="350" height="530" id="canvas"></canvas>
