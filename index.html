@@ -444,11 +444,21 @@ let r = 75;
 
 
 // can.addEventListener('click', checkControls);
+function touchControls(evt){
+    evt.preventDefault();
+
+    let x = evt.touches[0].clientX - rect.left - controlsCenter.x;
+    let y = evt.touches[0].clientY - rect.top - controlsCenter.y;
+    processUserMove(x, y);
+}
+
 function checkControls(evt){
     evt.preventDefault();
 
     let x = evt.clientX - rect.left - controlsCenter.x;
     let y = evt.clientY - rect.top - controlsCenter.y;
+    processUserMove(x, y);
+}
 /*
 if(!paused)move(-1);//left
 if(!paused)move(1);//right
@@ -456,6 +466,7 @@ if(!paused)rotate();//rotate
 if(!paused)down();//down
 if(!paused)drop();//drop
 */
+function processUserMove(x, y){
     let rotCol = '#aaffaa';
     let rightCol = '#ffaaaa';
     let downCol = '#aaaaff';
@@ -492,7 +503,7 @@ if(!paused)drop();//drop
 }
 
 can.addEventListener('mousemove', checkControls);
-can.addEventListener('touchmove', checkControls);
+can.addEventListener('touchmove', touchControls);
 
 can.addEventListener('touchstart', resume);
 can.addEventListener('mousedown', resume);
