@@ -4,8 +4,19 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
+            @font-face {
+              font-family: "raptor";
+              src: url("img/raptor.ttf") format("truetype"),
+                    url("img/raptor.woff") format("woff");
+              unicode-range: U+000-5FF;  
+            }
             canvas{
-                border: 1px solid black;
+                /*border: 1px solid black;*/
+            }
+            .topleft{
+                position: absolute;
+                top:0px;
+                left:0px;
             }
             .hidden{
                 display: none;
@@ -20,10 +31,24 @@
            
         </style>
         <script type="text/javascript">
-let OFFSET_X = 0;
-let OFFSET_Y = 0;
+let OFFSET_X = 58;
+let OFFSET_Y = 51;
 
-var CELL_SIZE = 15;
+var HEIGHT_IN_CELLS = 20;
+var WIDTH_IN_CELLS = 10;
+var CELL_SIZE = 20;
+
+var UI_ELEMENTS = [
+    {action: 'rotate', x: 55 + 1, y: 518, w: 40, h: 45},
+    {action: 'left'  , x: 23, y: 545, w: 40, h: 45},
+    {action: 'right' , x: 90, y: 545, w: 40, h: 45},
+    {action: 'down'  , x: 55 + 1, y: 575, w: 40, h: 45},
+
+    {action: 'drop'  , x: 241, y: 520, w: 94, h: 95},
+    
+    {action: 'reset' , x: 157, y: 493, w: 25, h: 26},
+    {action: 'pause' , x: 210, y: 493, w: 25, h: 26}
+];
 
 let OVER = false;
 
@@ -44,17 +69,19 @@ var CONFIGS = {
     'S' : [new Point(1, -1), new Point(0, -1), new Point(0, 0), new Point(-1, 0)],
     'T' : [new Point(-1, 0), new Point(0, 0), new Point(1, 0), new Point(0, 1)]
 };
-var COLORS = ['i-1', 'i-2', 'i-3'];
+var COLORS = ['i-1', 'i-2', 'i-3', 'i-4', 'i-5', 'i-6', 'i-7'];
 function randomColor(){
     return COLORS[Math.floor(Math.random() * COLORS.length)];
 }
 function getRandomTetr(){
-    return CONFIGS[MODELS[Math.floor(Math.random() * MODELS.length)]];
+    let key = Math.floor(Math.random() * MODELS.length);
+    return {points: CONFIGS[MODELS[key]], key: MODELS[key]};
 }
 //field statics
 //field 10x20
 //access fieldPoints[y][x]
-var EMPTY = '#c0c0c0';
+var EMPTY = 'rgba(125, 125, 125, 0)';
+// var EMPTY = '#c0c0c0';
 var DEAD = '#ffffff';
 
 function getEmptyLine(){//10 empty (white) cells
@@ -74,6 +101,7 @@ function paintFullLine(arr){
     }
 }
 var score = 0;
+var lines = 0;
 function checkFullLines(){
     var toKill = [];
     for(var i = fieldPoints.length - 1; i >= 0; i--){
@@ -84,7 +112,8 @@ function checkFullLines(){
     }
     render();
     if(toKill.length){
-        var deltaScore = 100 * toKill.length + (toKill.length - 1) * (toKill.length - 1) * 100;
+        lines += toKill.length;
+        var deltaScore = 1 * toKill.length + (toKill.length - 1) * (toKill.length - 1) * 1;
         addScore(deltaScore);
         // console.log('+ ' + deltaScore);
         paused = true;
@@ -104,7 +133,7 @@ function checkFullLines(){
 var fieldPoints = [];
 function initFieldPoints(){
     fieldPoints = [];
-    for(var i = 0; i < 22; i++){
+    for(var i = 0; i < HEIGHT_IN_CELLS; i++){
         fieldPoints.push(getEmptyLine());
     }
 }
@@ -136,9 +165,11 @@ var points = [];
 var pColor = '';
 
 //next one
-var nextOne = {color: '', points: []};
+var nextOne = {color: '', points: [], key: ''};
 function createNew(){
-    nextOne.points = getRandomTetr();
+    let tetr = getRandomTetr()
+    nextOne.points = tetr.points;
+    nextOne.key = tetr.key;
     nextOne.color = randomColor();
 
     renderNew();
@@ -226,14 +257,13 @@ function globalTetrPosition(arr, dx, dy){
  */
 //var glass;
 var intervalID = '';
-function start(re){
-    let ctx = document.getElementById('canvas').getContext('2d');
-    ctx.drawImage(document.getElementById('reset-img'), OFFSET_X + 11 * CELL_SIZE, 12 * CELL_SIZE);
+function start(re){    
     window.clearInterval(intervalID);
     initFieldPoints();
-    // paused = false;
+    paused = false;
     OVER = false;
     drawStatus('playing');
+    lines = 0;
     addScore(-score);
     // nextOne = {color: '', points: []};
     spawnTetr();
@@ -305,7 +335,7 @@ function getTexture(id){
 
 function drawRect(gr, x, y, w, h){
     gr.fillRect(x, y, w, h);
-    gr.strokeRect(x, y, w, h);    
+    gr.strokeRect(x, y, w, h);
 }
 function pathRect(gr, x, y, w, h){
     gr.moveTo(x, y);
@@ -316,13 +346,13 @@ function pathRect(gr, x, y, w, h){
 }
 function graphicsRender(gr){
     gr.fill();
-    gr.stroke();
+    // gr.stroke();
 }
 function render(){
     //PRE - RENDER
     var currentPos = globalTetrPosition(points);
     var colors = {};
-    for(var i = 0; i < 22; i++){//y
+    for(var i = 0; i < HEIGHT_IN_CELLS; i++){//y
         for(var k = 0; k < 10; k++){//x
             if(!colors[fieldPoints[i][k]]){
                 colors[fieldPoints[i][k]] = [];
@@ -340,7 +370,7 @@ function render(){
     //RENDER
     var can = document.getElementById('canvas');
     var graphics = can.getContext('2d');
-    graphics.clearRect(OFFSET_X, OFFSET_Y, 10 * CELL_SIZE, 22 * CELL_SIZE);
+    graphics.clearRect(OFFSET_X, OFFSET_Y, WIDTH_IN_CELLS * CELL_SIZE, HEIGHT_IN_CELLS * CELL_SIZE);
     graphics.strokeStyle = "#000000";
     graphics.lineWidth = 1;
     for(var k in colors){
@@ -357,19 +387,30 @@ function render(){
     }
 }
 
+let nextOffsets = {
+    'L' : new Point(3, 5),
+    'J' : new Point(7, 5),
+    'O' : new Point(2, 2),
+    'I' : new Point(5, 1.5),
+    'Z' : new Point(5, 2),
+    'S' : new Point(5, 2),
+    'T' : new Point(5.5, -4)
+};
 function renderNew(){
     var can = document.getElementById('canvas');
     var graphics = can.getContext('2d');
-    var startX = OFFSET_X + 11 * CELL_SIZE;
-    var startY = OFFSET_Y + CELL_SIZE;
-    graphics.clearRect(startX, startY - 2, 4 * CELL_SIZE, 6 * CELL_SIZE);
+    var startX = 274;
+    var startY = 152;
+    graphics.clearRect(startX - 14, startY - 14, 6 * 7, 6 * 7);
     graphics.strokeStyle = "#000000";
     graphics.lineWidth = 2;
     graphics.beginPath();
-    // graphics.fillStyle =
 
     for (var i = 0; i < nextOne.points.length; i++) {
-        graphics.drawImage(getTexture(nextOne.color), 5 + startX + (nextOne.points[i].x + 1) * CELL_SIZE, (nextOne.points[i].y + 2) * CELL_SIZE + startY, CELL_SIZE, CELL_SIZE);
+        graphics.drawImage(getTexture(nextOne.color), 
+            startX + (nextOne.points[i].x) * 7 + nextOffsets[nextOne.key].x, 
+            (nextOne.points[i].y) * 7 + startY + nextOffsets[nextOne.key].y, 
+            7, 7);
     }
     graphicsRender(graphics);
 }
@@ -377,106 +418,73 @@ function renderNew(){
 function drawStatus(str){
     var canvas = document.getElementById("canvas");
     var ctx = canvas.getContext("2d");
-    ctx.clearRect(OFFSET_X + 10 * CELL_SIZE + 1, 9 * CELL_SIZE, 150, -50);
-    ctx.font = "15px Arial";
+    ctx.clearRect(80, 32, 80, -50);
+    ctx.font = "18px raptor";
     ctx.fillStyle = '#000000';
-    ctx.fillText(str, OFFSET_X + 10.5 * CELL_SIZE, 8 * CELL_SIZE); 
+    ctx.fillText(str, 80, 25); 
 }
 
-function drawScore(str){
+function drawScore(str, lin){
     var canvas = document.getElementById("canvas");
     var ctx = canvas.getContext("2d");
-    ctx.clearRect(OFFSET_X + 10 * CELL_SIZE + 1, OFFSET_Y + 11 * CELL_SIZE, 150, -30);
-    ctx.font = "15px Arial";
+    ctx.clearRect(OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 1, 250, 150, -35);
+    ctx.clearRect(OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 1, 250 + 150, 150, -35);
+    ctx.font = "18px raptor";
     ctx.fillStyle = '#000000';
-    ctx.fillText('score: ' + str, OFFSET_X + 10.5 * CELL_SIZE, OFFSET_Y + 10 * CELL_SIZE); 
+
+    let offset = (str.toString().length - 1) * -4;
+    ctx.fillText(str, OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 20 + offset, 236); 
+    offset = (lin.toString().length - 1) * -4;
+    ctx.fillText(lin, OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 20 + offset, 236 + 150); 
 }
 
 function addScore(d){
     score += d;
-    drawScore(score);
+    drawScore(score, lines);
 }
 
         </script>
     </head>
-    <body onload="start()" onkeydown="handleKey(event)">
+    <body onload="init()" onkeydown="handleKey(event)">
         <!-- LOAD ASSETS HERE -->
         <div class="hidden">
-            <img id="reset-img" src="reset.png">
-            <img id="i-1" src="img/1.png">
-            <img id="i-2" src="img/2.png">
-            <img id="i-3" src="img/3.png">
-        </div>
+            <img id="i-1" src="img/cubes/1.png">
+            <img id="i-2" src="img/cubes/2.png">
+            <img id="i-3" src="img/cubes/3.png">
+            <img id="i-4" src="img/cubes/4.png">
+            <img id="i-5" src="img/cubes/5.png">
+            <img id="i-6" src="img/cubes/6.png">
+            <img id="i-7" src="img/cubes/7.png">
 
-        <canvas width="350" height="530" id="canvas"></canvas>
-        <!-- <br><button onclick="start(true)">reset</button> -->
-        <!-- | score = <span id="score">0</span><span id="dscore"></span> -->
+            <img id="reset" src="img/sm_btn.png">
+            <img id="pause" src="img/sm_btn.png">
+
+            <img id="rotate" src="img/btn.png">
+            <img id="left" src="img/btn.png">
+            <img id="right" src="img/btn.png">
+            <img id="down" src="img/btn.png">
+
+            <img id="drop" src="img/big_btn.png">
+        </div>
+        <script type="text/javascript" src="js/ui.js"></script>
+
+        <img class="topleft" src="img/bg.png">
+        <!-- <img class="topleft" src="img/full.png"> -->
+        <canvas class="topleft" width="360" height="640" id="canvas"></canvas>
 
     <script type="text/javascript">
-const CONTROLS_TICK_INTERVAL = 300;
-let ACTION = '';
-function controlsTick(instant){
-    if(paused)return;
-
-    if(ACTION){
-        switch(ACTION){
-            case 'left': move(-1); break;
-            case 'right': move(1); break;
-            case 'rotate': if(instant)rotate(); break;
-            case 'down': down(); break;
-        }
-        render();
-    }
-}
-
 
 let can = document.getElementById('canvas');
 let ctx = can.getContext('2d');
 let rect = can.getBoundingClientRect();
-
-function drawCircle(x, y, radius, ctx){
-    ctx.arc(x, y, radius, 0, 2 * Math.PI);
+function init(){
+    for (var i = 0; i < UI_ELEMENTS.length; i++) {
+        ctx.drawImage(getTexture(UI_ELEMENTS[i].action), UI_ELEMENTS[i].x, UI_ELEMENTS[i].y, UI_ELEMENTS[i].w, UI_ELEMENTS[i].h);
+    }
+    setTimeout(function(){drawScore(0, 0)}, 50);
+    start();
 }
 
-function drawSector(x, y, r1, r2, turn, col, ctx){
-    ctx.beginPath();
-    ctx.fillStyle = col;
-    ctx.arc(x, y, r1, -0.73 * Math.PI + turn * Math.PI, -0.28 * Math.PI + turn * Math.PI);
-    ctx.arc(x, y, r2, -0.30 * Math.PI + turn * Math.PI, -0.7 * Math.PI + turn * Math.PI, true);
-    ctx.closePath();
-    ctx.stroke();
-    ctx.fill();
-}
-
-function renderControl(ux, uy, rotCol, rightCol, downCol, leftCol){
-    ctx.clearRect(controlsCenter.x - 76 - 10, controlsCenter.y - 76 - 10, r * 2 + 2 + 20, r * 2 + 2 + 20);
-
-    ctx.beginPath();
-    ctx.strokeStyle = "#000000";
-    ctx.lineWidth = 1;
-    drawCircle(controlsCenter.x, controlsCenter.y, r, ctx);
-    ctx.closePath();
-    ctx.stroke();
-
-    drawSector(controlsCenter.x, controlsCenter.y, r, 25, 0, rotCol, ctx);
-    drawSector(controlsCenter.x, controlsCenter.y, r, 25, 0.5, rightCol, ctx);
-    drawSector(controlsCenter.x, controlsCenter.y, r, 25, 1, downCol, ctx);
-    drawSector(controlsCenter.x, controlsCenter.y, r, 25, 1.5, leftCol, ctx);
-
-
-    ctx.beginPath();
-    ctx.fillStyle = '#ff00ff';
-    drawCircle(controlsCenter.x + ux, controlsCenter.y + uy, 10, ctx);
-    ctx.stroke();
-    ctx.fill();
-}
-
-
-let controlsCenter = new Point(can.width / 2, 22 * CELL_SIZE + 20 + 75);
-let r = 75;
-
-
-// can.addEventListener('click', checkControls);
 function checkDown(evt){
     let x = evt.clientX - rect.left;
     let y = evt.clientY - rect.top;
@@ -487,97 +495,38 @@ function checkTouchDown(evt){
     let y = evt.touches[0].clientY - rect.top;
     onDown(x, y);
 }
+
+function inRect(x, y, rx, ry, rw, rh){
+    return (x > rx && x < rx + rw && y > ry && y < ry + rh);  
+}
+
 function onDown(x, y){
-    let cx = x - controlsCenter.x;
-    let cy = y - controlsCenter.y;
-    let dist = Math.sqrt(cx * cx + cy * cy);
-    if(dist < r){
-        resume();
-    }
-    let resetX = OFFSET_X + 11 * CELL_SIZE;
-    let resetY = 12 * CELL_SIZE;
-    if(x > resetX && x < resetX + 48 && y > resetY && y < resetY + 48){
-        start(true);
-    }
-}
+    let needUpdate = false;
+    for (var i = 0; i < UI_ELEMENTS.length; i++) {
+        var el = UI_ELEMENTS[i];
+        if(inRect(x, y, el.x, el.y, el.w, el.h)){
+            needUpdate = true;
 
+            switch(el.action){
+                case 'left': if(!paused) move(-1); break;
+                case 'right': if(!paused) move(1); break;
+                case 'rotate': if(!paused) rotate(); break;
+                case 'down': if(!paused) down(); break;
+                case 'drop': if(!paused) drop(); break;
 
-function touchControls(evt){
-    evt.preventDefault();
-
-    let x = evt.touches[0].clientX - rect.left - controlsCenter.x;
-    let y = evt.touches[0].clientY - rect.top - controlsCenter.y;
-    // document.getElementById('t').innerHTML = `${x}, ${y}`;
-    processUserMove(x, y);
-}
-
-function checkControls(evt){
-    evt.preventDefault();
-
-    let x = evt.clientX - rect.left - controlsCenter.x;
-    let y = evt.clientY - rect.top - controlsCenter.y;
-    processUserMove(x, y);
-}
-/*
-if(!paused)move(-1);//left
-if(!paused)move(1);//right
-if(!paused)rotate();//rotate
-if(!paused)down();//down
-if(!paused)drop();//drop
-*/
-function processUserMove(x, y){
-    let rotCol = '#aaffaa';
-    let rightCol = '#ffaaaa';
-    let downCol = '#aaaaff';
-    let leftCol = '#ffffaa';
-    let dist = Math.sqrt(x * x + y * y);
-    if(dist < r){
-        let instant = false;
-        if(Math.abs(y) > Math.abs(x) && dist > 28 && y < 0){
-            if(ACTION != 'rotate') instant = true;
-            ACTION = 'rotate';//rotate
-            rotCol = '#00ff00';
-        }else if(Math.abs(y) < Math.abs(x) && dist > 28 && x > 0){
-            if(ACTION != 'right') instant = true;
-            ACTION = 'right';//right
-            rightCol = '#ff0000';
-        }else if(Math.abs(y) > Math.abs(x) && dist > 28 && y > 0){
-            if(ACTION != 'down') instant = true;
-            ACTION = 'down';//down
-            downCol = '#00ff00';
-        }else if(Math.abs(y) < Math.abs(x) && dist > 28 && x < 0){
-            if(ACTION != 'left') instant = true;
-            ACTION = 'left';//left
-            leftCol = '#ffff00';
-        }else{
-            ACTION = ''
-        }
-
-        renderControl(x, y, rotCol, rightCol, downCol, leftCol);
-
-        if(instant){
-            controlsTick(true);
+                case 'pause': togglePaused(); break;
+                case 'reset': start(true); break;
+            }
         }
     }
+    if(needUpdate){
+        render();
+    }
 }
-
-can.addEventListener('mousemove', checkControls);
-can.addEventListener('touchmove', touchControls);
 
 can.addEventListener('touchstart', checkTouchDown);
 can.addEventListener('mousedown', checkDown);
 
-can.addEventListener('touchend', pause);
-can.addEventListener('mouseup', pause);
-
-
-document.querySelectorAll("button").forEach( function(item) {
-    item.addEventListener('focus', function() {
-        this.blur();
-    })
-})
-
-setInterval(controlsTick, CONTROLS_TICK_INTERVAL);
 
     </script>
     </body>
