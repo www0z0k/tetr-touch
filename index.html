@@ -17,6 +17,7 @@
                 position: absolute;
                 top:0px;
                 left:0px;
+                height: 100%;
             }
             .hidden{
                 display: none;
@@ -31,6 +32,7 @@
            
         </style>
         <script type="text/javascript">
+let K = 1;
 let OFFSET_X = 58;
 let OFFSET_Y = 51;
 
@@ -473,6 +475,10 @@ function addScore(d){
         <canvas class="topleft" width="360" height="640" id="canvas"></canvas>
 
     <script type="text/javascript">
+window.onresize = function(){
+    K = 640 / window.innerHeight;
+};
+K = 640 / window.innerHeight;
 
 let can = document.getElementById('canvas');
 let ctx = can.getContext('2d');
@@ -488,12 +494,12 @@ function init(){
 function checkDown(evt){
     let x = evt.clientX - rect.left;
     let y = evt.clientY - rect.top;
-    onDown(x, y);
+    onDown(x * K, y * K);
 }
 function checkTouchDown(evt){
     let x = evt.touches[0].clientX - rect.left;
     let y = evt.touches[0].clientY - rect.top;
-    onDown(x, y);
+    onDown(x * K, y * K);
 }
 
 function inRect(x, y, rx, ry, rw, rh){
