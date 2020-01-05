@@ -15,6 +15,8 @@
             }
             body{
                  -webkit-tap-highlight-color: transparent;
+                 /*background-color: #4a76a7;*/
+                 background-color: #ee8333;
             }
             .topleft{
                 position: absolute;
@@ -521,7 +523,12 @@ window.onresize = function(){
     K = 640 / window.innerHeight;
 };
 K = 640 / window.innerHeight;
-
+try{
+    var can1 = document.getElementById('canvas');
+    var ctx1 = can1.getContext('2d');
+}catch(er){
+    alert('canvas not supported');
+}
 let can = document.getElementById('canvas');
 let ctx = can.getContext('2d');
 let rect = can.getBoundingClientRect();
