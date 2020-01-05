@@ -483,10 +483,10 @@ function addScore(d){
             <img id="pause" src="img/btn.png">
             <!-- <img id="reset" src="img/sm_btn.png">
             <img id="pause" src="img/sm_btn.png"> -->
-            <img id="rotate" src="img/big_btn.png">
-            <img id="left" src="img/big_btn.png">
-            <img id="right" src="img/big_btn.png">
-            <img id="down" src="img/big_btn.png">
+            <img id="rotate" src="img/rotate.png">
+            <img id="left" src="img/left.png">
+            <img id="right" src="img/right.png">
+            <img id="down" src="img/down.png">
 
            <!--  <img id="rotate" src="img/btn.png">
             <img id="left" src="img/btn.png">
@@ -502,39 +502,15 @@ function addScore(d){
         <img class="topleft click-through" style="display: none;" id="over-overlay"src="img/over.png">
 
     <script type="text/javascript">
-var xpatch = 10;
-var ypatch = -10;
-// var UI_ELEMENTS = [
-//     {action: 'rotate', x: 56, y: 518 - 12, w: 40 * 1.3, h: 40*1.3},
-//     {action: 'left'  , x: 23 - 5, y: 545, w: 40 * 1.3, h: 40 * 1.3},
-//     {action: 'right' , x: 90 + 5, y: 545, w: 40 * 1.3, h: 40 * 1.3},
-//     {action: 'down'  , x: 56, y: 575 + 8, w: 40 * 1.3, h: 40 * 1.3},
 
-//     {action: 'drop'  , x: 241, y: 520 + 0, w: 94, h: 95},
-    
-//     {action: 'reset' , x: 157 - 1, y: 493 + 1, w: 25 * 1.1, h: 26 * 1.1},
-//     {action: 'pause' , x: 210 - 2, y: 493 + 1, w: 25 * 1.1, h: 26 * 1.1}
-// ];
-// var UI_ELEMENTS = [
-//     {action: 'rotate', x: 56 + 196, y: 518 - 12, w: 40 * 1.3, h: 40*1.3},
-//     {action: 'right' , x: 95 + 196, y: 545, w: 40 * 1.3, h: 40 * 1.3},
-
-//     {action: 'left'  , x: 18, y: 545, w: 40 * 1.3, h: 40 * 1.3},
-//     {action: 'down'  , x: 56, y: 575 + 8, w: 40 * 1.3, h: 40 * 1.3},
-
-//     {action: 'drop'  , x: 241 - 90, y: 520 + 24, w: 94, h: 95},
-    
-//     {action: 'reset' , x: 157 - 1, y: 493 + 1, w: 25 * 1.1, h: 26 * 1.1},
-//     {action: 'pause' , x: 210 - 2, y: 493 + 1, w: 25 * 1.1, h: 26 * 1.1}
-// ];
 var UI_ELEMENTS = [
-    {action: 'rotate', x: 56 + 196, y: 506 + 33, w: 40 * 1.3, h: 40*1.3},
-    {action: 'right' , x: 95 + 196, y: 545 + 33, w: 40 * 1.3, h: 40 * 1.3},
+    {action: 'left'  , x: 219, y: 567, w: 66, h: 66},
+    {action: 'right' , x: 287, y: 567, w: 66, h: 66},
 
-    {action: 'left'  , x: 18, y: 545, w: 40 * 1.3, h: 40 * 1.3},
-    {action: 'down'  , x: 56, y: 575 + 8, w: 40 * 1.3, h: 40 * 1.3},
+    {action: 'rotate', x: 34, y: 493, w: 66, h: 66},
+    {action: 'down'  , x: 34, y: 567, w: 66, h: 66},
 
-    {action: 'drop'  , x: 241 - 103, y: 520 + 24, w: 94, h: 95},
+    {action: 'drop'  , x: 120, y: 538, w: 97, h: 97},
     
     {action: 'reset' , x: 157 - 1, y: 493 + 1, w: 25 * 1.1, h: 26 * 1.1},
     {action: 'pause' , x: 210 - 2, y: 493 + 1, w: 25 * 1.1, h: 26 * 1.1}
