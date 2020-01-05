@@ -1,0 +1,598 @@
+<html>
+    <head>
+        <title>TETRIS - FIRST PLAYABLE</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            @font-face {
+              font-family: "raptor";
+              src: url("img/raptor.ttf") format("truetype"),
+                    url("img/raptor.woff") format("woff");
+              unicode-range: U+000-5FF;  
+            }
+            canvas{
+                /*border: 1px solid black;*/
+            }
+            body{
+                 -webkit-tap-highlight-color: transparent;
+            }
+            .topleft{
+                position: absolute;
+                top:0px;
+                left:0px;
+                height: 100%;
+            }
+
+            .hidden{
+                display: none;
+            }
+            .click-through{
+                pointer-events: none;
+            }
+           
+        </style>
+        <script type="text/javascript">
+let K = 1;
+let OFFSET_X = 58;
+let OFFSET_Y = 51;
+
+var HEIGHT_IN_CELLS = 20;
+var WIDTH_IN_CELLS = 10;
+var CELL_SIZE = 20;
+
+let OVER = false;
+
+//point class
+function Point(x, y){
+    this.x = x;
+    this.y = y;
+}
+Point.prototype = { x : 0, y : 0, constructor : Point};
+//tetrs theory
+var MODELS = ['L', 'J', 'O', 'I', 'Z', 'S', 'T'];
+var CONFIGS = {
+    'L' : [new Point(0, -2), new Point(0, -1), new Point(0, 0), new Point(1, 0)],
+    'J' : [new Point(0, -2), new Point(0, -1), new Point(0, 0), new Point(-1, 0)],
+    'O' : [new Point(0, -1), new Point(1, -1), new Point(1, 0), new Point(0, 0)],
+    'I' : [new Point(0, -2), new Point(0, -1), new Point(0, 0), new Point(0, 1)],
+    'Z' : [new Point(-1, -1), new Point(0, -1), new Point(0, 0), new Point(1, 0)],
+    'S' : [new Point(1, -1), new Point(0, -1), new Point(0, 0), new Point(-1, 0)],
+    'T' : [new Point(-1, 0), new Point(0, 0), new Point(1, 0), new Point(0, 1)]
+};
+var COLORS = ['i-1', 'i-2', 'i-3', 'i-4', 'i-5', 'i-6', 'i-7'];
+function randomColor(){
+    return COLORS[Math.floor(Math.random() * COLORS.length)];
+}
+function getRandomTetr(){
+    let key = Math.floor(Math.random() * MODELS.length);
+    return {points: CONFIGS[MODELS[key]], key: MODELS[key]};
+}
+//field statics
+//field 10x20
+//access fieldPoints[y][x]
+var EMPTY = 'rgba(125, 125, 125, 0)';
+// var EMPTY = '#c0c0c0';
+var DEAD = '#ffffff';
+
+function getEmptyLine(){//10 empty (white) cells
+    return [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY];
+}
+function isLineFull(arr){
+    for(var i = 0; i < arr.length; i++){
+        if(arr[i] == EMPTY){
+            return false;
+        }
+    }
+    return true;
+}
+function paintFullLine(arr){
+    for(var i = 0; i < arr.length; i++){   
+        arr[i] = DEAD;
+    }
+}
+var score = 0;
+var lines = 0;
+function checkFullLines(){
+    var toKill = [];
+    for(var i = fieldPoints.length - 1; i >= 0; i--){
+        if(isLineFull(fieldPoints[i])){
+            toKill.push(i);
+            paintFullLine(fieldPoints[i]);
+        }
+    }
+    render();
+    if(toKill.length){
+        lines += toKill.length;
+        var deltaScore = 1 * toKill.length + (toKill.length - 1) * (toKill.length - 1) * 1;
+        addScore(deltaScore);
+        // console.log('+ ' + deltaScore);
+        paused = true;
+        setTimeout(function(){
+            for(var k = 0; k < toKill.length; k++){
+                fieldPoints.splice(toKill[k], 1);
+            }
+            for(var k = 0; k < toKill.length; k++){
+                fieldPoints.unshift(getEmptyLine());
+            }
+            toKill = [];
+            render();
+            paused = false;
+        }, 150);    
+    }
+}
+var fieldPoints = [];
+function initFieldPoints(){
+    fieldPoints = [];
+    for(var i = 0; i < HEIGHT_IN_CELLS; i++){
+        fieldPoints.push(getEmptyLine());
+    }
+}
+function isPointFree(x, y){
+    if(!fieldPoints[y]){
+        return false;
+    }
+    if(!fieldPoints[y][x]){
+        return false;
+    }
+    return fieldPoints[y][x] == EMPTY;
+}
+function allowTetr(arr){
+    for(var i = 0; i < arr.length; i++){
+        if(!isPointFree(arr[i].x, arr[i].y)){
+            return false;
+        }
+    }
+    return true;
+}
+function addPoint(x, y, color){
+    fieldPoints[y][x] = color;
+}
+//current tetr
+var angle = 0;
+var x = 4;
+var y = 2;
+var points = [];
+var pColor = '';
+
+//next one
+var nextOne = {color: '', points: [], key: ''};
+function createNew(){
+    let tetr = getRandomTetr()
+    nextOne.points = tetr.points;
+    nextOne.key = tetr.key;
+    nextOne.color = randomColor();
+
+    renderNew();
+}
+
+function spawnTetr(){
+    if(!nextOne.color){
+        createNew();
+    }
+    points = nextOne.points.slice();
+    angle = 0;
+    x = 4 + Math.round(Math.random());
+    y = 2;
+    pColor = nextOne.color;
+    if(!allowTetr(globalTetrPosition(points))){
+        paused = true;
+        OVER = true;
+        drawStatus();
+        render();
+    }else{
+        createNew();
+    }
+}
+function rotate(){
+    var a = angle + 90 > 270 ? 0 : angle + 90;
+    var arr = [];
+    if(a == 90 || a == 270){
+        for(var i = 0; i < points.length; i++){
+            arr[i] = new Point(-points[i].y, points[i].x);
+        }
+    }else{
+        for(var i = 0; i < points.length; i++){
+            arr[i] = new Point(-points[i].y, points[i].x);
+        }
+    }
+    //check
+    if(allowTetr(globalTetrPosition(arr))){
+        angle = a;
+        points = arr;
+    }
+}
+function move(d){
+    //check
+    if(allowTetr(globalTetrPosition(points, d))){
+        x += d;
+    }
+}
+/**
+ * 
+ * @returns {boolean - can move further down}
+ */
+function down(){
+    //check
+    if(allowTetr(globalTetrPosition(points, 0, 1))){
+        ++y;
+        return true;
+    }
+    die();
+    checkFullLines();
+    spawnTetr();
+    return false;
+}
+function drop(){
+    while(down()){
+        
+    }
+}
+function die(){
+    var arr = globalTetrPosition(points);
+    for(var i = 0; i < arr.length; i++){
+        addPoint(arr[i].x, arr[i].y, pColor);
+    }
+}
+function globalTetrPosition(arr, dx, dy){
+    dx = dx || 0;
+    dy = dy || 0;
+    var res = [];
+    for(var i = 0; i < arr.length; i++){
+        res[i] = new Point(arr[i].x + x + dx, arr[i].y + y + dy);
+    }
+    return res;
+}
+/**
+ * GAMEPLAY
+ */
+//var glass;
+var intervalID = '';
+function start(re){    
+    window.clearInterval(intervalID);
+    initFieldPoints();
+    paused = false;
+    OVER = false;
+    drawStatus();
+    lines = 0;
+    addScore(-score);
+    // nextOne = {color: '', points: []};
+    spawnTetr();
+    intervalID = window.setInterval(step, 600);
+    render();
+}
+var paused = true;
+function togglePaused(){
+    paused = !paused;
+    drawStatus();
+}
+
+function pause(){
+    paused = true;
+}
+
+function resume(){
+    paused = false;
+}
+
+
+function step(){
+    if(OVER || paused){
+        return;
+    }
+
+    down();
+    render();
+}
+/**
+ * INPUT
+ */
+function handleKey(evt){
+  //console.log(evt);
+    switch(evt.keyCode){
+        case 37://left
+            if(!paused)move(-1);
+        break;
+        case 39://right
+            if(!paused)move(1);
+        break;
+        case 38://up
+            if(!paused)rotate();
+        break;
+        case 40://down
+            if(!paused)down();
+        break;
+        case 32://space
+            if(!paused)drop();
+        break;
+        case 27://escape
+            togglePaused();
+        break;
+    }
+    evt.preventDefault();
+    evt.stopImmediatePropagation();
+    render();
+}
+/**
+ * RENDER
+ */
+function getTexture(id){
+    return document.getElementById(id);
+}
+
+function drawRect(gr, x, y, w, h){
+    gr.fillRect(x, y, w, h);
+    gr.strokeRect(x, y, w, h);
+}
+function pathRect(gr, x, y, w, h){
+    gr.moveTo(x, y);
+    gr.lineTo(x + w, y);
+    gr.lineTo(x + w, y + h);
+    gr.lineTo(x, y + h);
+    gr.lineTo(x, y);    
+}
+function graphicsRender(gr){
+    gr.fill();
+    // gr.stroke();
+}
+function render(){
+    //PRE - RENDER
+    var currentPos = globalTetrPosition(points);
+    var colors = {};
+    for(var i = 0; i < HEIGHT_IN_CELLS; i++){//y
+        for(var k = 0; k < 10; k++){//x
+            if(!colors[fieldPoints[i][k]]){
+                colors[fieldPoints[i][k]] = [];
+            }
+            colors[fieldPoints[i][k]].push(new Point(k, i));
+        }
+    }
+    for(var c = 0; c < currentPos.length; c++){
+        if(!colors[pColor]){
+            colors[pColor] = [];
+        }
+        colors[pColor].push(new Point(currentPos[c].x, currentPos[c].y));
+    }
+
+    //RENDER
+    var can = document.getElementById('canvas');
+    var graphics = can.getContext('2d');
+    graphics.clearRect(OFFSET_X, OFFSET_Y, WIDTH_IN_CELLS * CELL_SIZE, HEIGHT_IN_CELLS * CELL_SIZE);
+    graphics.strokeStyle = "#000000";
+    graphics.lineWidth = 1;
+    for(var k in colors){
+        graphics.beginPath();
+        graphics.fillStyle = k;
+        for(var i = 0; i < colors[k].length; i++){
+            if(k == EMPTY || k == '#ffffff'){
+                pathRect(graphics, OFFSET_X + colors[k][i].x * CELL_SIZE, OFFSET_Y + colors[k][i].y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+            }else{
+                graphics.drawImage(getTexture(k), OFFSET_X + colors[k][i].x * CELL_SIZE, OFFSET_Y + colors[k][i].y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+            }
+        }
+        graphicsRender(graphics);
+    }
+}
+
+let nextOffsets = {
+    'L' : new Point(3, 5),
+    'J' : new Point(7, 5),
+    'O' : new Point(2, 2),
+    'I' : new Point(5, 1.5),
+    'Z' : new Point(5, 2),
+    'S' : new Point(5, 2),
+    'T' : new Point(5.5, -4)
+};
+function renderNew(){
+    var can = document.getElementById('canvas');
+    var graphics = can.getContext('2d');
+    var startX = 274;
+    var startY = 152;
+    graphics.clearRect(startX - 14, startY - 14, 6 * 7, 6 * 7);
+    graphics.strokeStyle = "#000000";
+    graphics.lineWidth = 2;
+    graphics.beginPath();
+
+    for (var i = 0; i < nextOne.points.length; i++) {
+        graphics.drawImage(getTexture(nextOne.color), 
+            startX + (nextOne.points[i].x) * 7 + nextOffsets[nextOne.key].x, 
+            (nextOne.points[i].y) * 7 + startY + nextOffsets[nextOne.key].y, 
+            7, 7);
+    }
+    graphicsRender(graphics);
+}
+
+function drawStatus(){
+    // var canvas = document.getElementById("canvas");
+    // var ctx = canvas.getContext("2d");
+    // ctx.clearRect(80, 32, 80, -50);
+    // ctx.font = "18px raptor";
+    // ctx.fillStyle = '#000000';
+    // ctx.fillText(str, 80, 25); 
+    document.getElementById('paused-overlay').style.display = (paused && !OVER) ? 'block' : 'none';
+    document.getElementById('over-overlay').style.display = OVER ? 'block' : 'none';
+}
+
+function drawScore(str, lin){
+    str = str == 0 ? '-' : str;
+    lin = lin == 0 ? '-' : lin;
+    let sSize = 18;
+    let sYOff = 0;
+    switch(str.toString().length){
+        case 3:
+            sSize = 16;
+        break;
+        case 4:
+            sSize = 13;
+            sYOff = -1.5;
+        break;
+        case 5:
+            sSize = 10;
+            sYOff = -3;
+        break;          
+    }
+    let lSize = 18;
+    let lYOff = 0;
+    switch(lin.toString().length){
+        case 3:
+            lSize = 16;
+        break;
+        case 4:
+            lSize = 13;
+            lYOff = -1.5;
+        break;
+        case 5:
+            lSize = 10;
+            lYOff = -3;
+        break;        
+    }
+    
+    var canvas = document.getElementById("canvas");
+    var ctx = canvas.getContext("2d");
+    ctx.clearRect(OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 1, 250, 150, -35);
+    ctx.clearRect(OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 1, 250 + 150, 150, -35);
+
+    ctx.font = sSize + "px raptor";
+    ctx.fillStyle = '#000000';
+    let sOff = -ctx.measureText(str).width / 2;
+    ctx.fillText(str, OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 26 + sOff, 236 + sYOff); 
+
+    ctx.font = lSize + "px raptor";
+    let lOff = -ctx.measureText(lin).width / 2;
+    ctx.fillText(lin, OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 26 + lOff, 236 + lYOff + 150); 
+}
+
+function addScore(d){
+    score += d;
+    drawScore(score, lines);
+}
+
+        </script>
+    </head>
+    <body onload="init()" onkeydown="handleKey(event)">
+        <!-- LOAD ASSETS HERE -->
+        <div class="hidden">
+            <img id="i-1" src="img/cubes/1.png">
+            <img id="i-2" src="img/cubes/2.png">
+            <img id="i-3" src="img/cubes/3.png">
+            <img id="i-4" src="img/cubes/4.png">
+            <img id="i-5" src="img/cubes/5.png">
+            <img id="i-6" src="img/cubes/6.png">
+            <img id="i-7" src="img/cubes/7.png">
+
+            <img id="reset" src="img/btn.png">
+            <img id="pause" src="img/btn.png">
+            <!-- <img id="reset" src="img/sm_btn.png">
+            <img id="pause" src="img/sm_btn.png"> -->
+            <img id="rotate" src="img/big_btn.png">
+            <img id="left" src="img/big_btn.png">
+            <img id="right" src="img/big_btn.png">
+            <img id="down" src="img/big_btn.png">
+
+           <!--  <img id="rotate" src="img/btn.png">
+            <img id="left" src="img/btn.png">
+            <img id="right" src="img/btn.png">
+            <img id="down" src="img/btn.png"> -->
+
+            <img id="drop" src="img/big_btn.png">
+        </div>
+        <img class="topleft" src="img/bg.png">
+        <!-- <img class="topleft" src="img/full.png"> -->
+        <canvas class="topleft" width="360" height="640" id="canvas"></canvas>
+        <img class="topleft click-through" style="display: none;" id="paused-overlay" src="img/paused.png">
+        <img class="topleft click-through" style="display: none;" id="over-overlay"src="img/over.png">
+
+    <script type="text/javascript">
+var xpatch = 10;
+var ypatch = -10;
+// var UI_ELEMENTS = [
+//     {action: 'rotate', x: 56, y: 518 - 12, w: 40 * 1.3, h: 40*1.3},
+//     {action: 'left'  , x: 23 - 5, y: 545, w: 40 * 1.3, h: 40 * 1.3},
+//     {action: 'right' , x: 90 + 5, y: 545, w: 40 * 1.3, h: 40 * 1.3},
+//     {action: 'down'  , x: 56, y: 575 + 8, w: 40 * 1.3, h: 40 * 1.3},
+
+//     {action: 'drop'  , x: 241, y: 520 + 0, w: 94, h: 95},
+    
+//     {action: 'reset' , x: 157 - 1, y: 493 + 1, w: 25 * 1.1, h: 26 * 1.1},
+//     {action: 'pause' , x: 210 - 2, y: 493 + 1, w: 25 * 1.1, h: 26 * 1.1}
+// ];
+var UI_ELEMENTS = [
+    {action: 'rotate', x: 56 + 196, y: 518 - 12, w: 40 * 1.3, h: 40*1.3},
+    {action: 'right' , x: 95 + 196, y: 545, w: 40 * 1.3, h: 40 * 1.3},
+
+    {action: 'left'  , x: 18, y: 545, w: 40 * 1.3, h: 40 * 1.3},
+    {action: 'down'  , x: 56, y: 575 + 8, w: 40 * 1.3, h: 40 * 1.3},
+
+    {action: 'drop'  , x: 241 - 90, y: 520 + 24, w: 94, h: 95},
+    
+    {action: 'reset' , x: 157 - 1, y: 493 + 1, w: 25 * 1.1, h: 26 * 1.1},
+    {action: 'pause' , x: 210 - 2, y: 493 + 1, w: 25 * 1.1, h: 26 * 1.1}
+];
+
+window.onresize = function(){
+    K = 640 / window.innerHeight;
+};
+K = 640 / window.innerHeight;
+
+let can = document.getElementById('canvas');
+let ctx = can.getContext('2d');
+let rect = can.getBoundingClientRect();
+function init(){
+    for (var i = 0; i < UI_ELEMENTS.length; i++) {
+        ctx.drawImage(getTexture(UI_ELEMENTS[i].action), UI_ELEMENTS[i].x, UI_ELEMENTS[i].y, UI_ELEMENTS[i].w, UI_ELEMENTS[i].h);
+    }
+    setTimeout(function(){drawScore(0, 0)}, 50);
+    setTimeout(function(){drawScore(0, 0)}, 75);
+    start();
+}
+
+function checkDown(evt){
+    evt.preventDefault();
+    let x = evt.clientX - rect.left;
+    let y = evt.clientY - rect.top;
+    onDown(x * K, y * K);
+}
+function checkTouchDown(evt){
+    evt.preventDefault();
+    let x = evt.touches[0].clientX - rect.left;
+    let y = evt.touches[0].clientY - rect.top;
+    onDown(x * K, y * K);
+}
+
+function inRect(x, y, rx, ry, rw, rh){
+    return (x > rx && x < rx + rw && y > ry && y < ry + rh);  
+}
+
+function onDown(x, y){
+    let needUpdate = false;
+    // let data = ctx.getImageData(x, y, 1, 1).data;
+    // console.log(data);
+    for (var i = 0; i < UI_ELEMENTS.length; i++) {
+        var el = UI_ELEMENTS[i];
+        if(inRect(x, y, el.x, el.y, el.w, el.h)){
+            needUpdate = true;
+
+            switch(el.action){
+                case 'left': if(!paused) move(-1); break;
+                case 'right': if(!paused) move(1); break;
+                case 'rotate': if(!paused) rotate(); break;
+                case 'down': if(!paused) down(); break;
+                case 'drop': if(!paused) drop(); break;
+
+                case 'pause': togglePaused(); break;
+                case 'reset': start(true); break;
+            }
+        }
+    }
+    if(needUpdate){
+        render();
+    }
+}
+
+// can.addEventListener('touchstart', checkTouchDown);
+can.addEventListener('mousedown', checkDown);
+// document.addEventListener('mousedown', checkDown);
+
+
+    </script>
+    </body>
+</html>
