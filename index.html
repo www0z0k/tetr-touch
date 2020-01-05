@@ -448,9 +448,10 @@ function addScore(d){
             <img id="i-6" src="img/cubes/6.png">
             <img id="i-7" src="img/cubes/7.png">
 
-            <img id="reset" src="img/sm_btn.png">
-            <img id="pause" src="img/sm_btn.png">
-
+            <img id="reset" src="img/btn.png">
+            <img id="pause" src="img/btn.png">
+            <!-- <img id="reset" src="img/sm_btn.png">
+            <img id="pause" src="img/sm_btn.png"> -->
             <img id="rotate" src="img/big_btn.png">
             <img id="left" src="img/big_btn.png">
             <img id="right" src="img/big_btn.png">
@@ -480,8 +481,8 @@ var UI_ELEMENTS = [
 
     {action: 'drop'  , x: 241, y: 520 + 0, w: 94, h: 95},
     
-    {action: 'reset' , x: 157, y: 493, w: 25, h: 26},
-    {action: 'pause' , x: 210, y: 493, w: 25, h: 26}
+    {action: 'reset' , x: 157 - 1, y: 493 + 1, w: 25 * 1.1, h: 26 * 1.1},
+    {action: 'pause' , x: 210 - 2, y: 493 + 1, w: 25 * 1.1, h: 26 * 1.1}
 ];
 
 window.onresize = function(){
