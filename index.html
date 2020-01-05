@@ -103,7 +103,7 @@ function checkFullLines(){
     render();
     if(toKill.length){
         lines += toKill.length;
-        var deltaScore = 1 * toKill.length + (toKill.length - 1) * (toKill.length - 1) * 1;
+        var deltaScore = 1 * toKill.length + (toKill.length - 1) * (toKill.length - 1) * 100;
         addScore(deltaScore);
         // console.log('+ ' + deltaScore);
         paused = true;
@@ -415,18 +415,50 @@ function drawStatus(){
 function drawScore(str, lin){
     str = str == 0 ? '-' : str;
     lin = lin == 0 ? '-' : lin;
+    let sSize = 18;
+    let sYOff = 0;
+    switch(str.toString().length){
+        case 3:
+            sSize = 16;
+        break;
+        case 4:
+            sSize = 13;
+            sYOff = -1.5;
+        break;
+        case 5:
+            sSize = 10;
+            sYOff = -3;
+        break;          
+    }
+    let lSize = 18;
+    let lYOff = 0;
+    switch(lin.toString().length){
+        case 3:
+            lSize = 16;
+        break;
+        case 4:
+            lSize = 13;
+            lYOff = -1.5;
+        break;
+        case 5:
+            lSize = 10;
+            lYOff = -3;
+        break;        
+    }
+    
     var canvas = document.getElementById("canvas");
     var ctx = canvas.getContext("2d");
     ctx.clearRect(OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 1, 250, 150, -35);
     ctx.clearRect(OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 1, 250 + 150, 150, -35);
 
-    let offset = (str.toString().length - 1) * -3;
-    ctx.font = (15 - (str.toString().length - 2)) + "px raptor";
+    ctx.font = sSize + "px raptor";
     ctx.fillStyle = '#000000';
-    ctx.fillText(str, OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 20 + offset, 236); 
-    offset = (lin.toString().length - 1) * -4;
-    ctx.font = (15 - (lin.toString().length - 2)) + "px raptor";
-    ctx.fillText(lin, OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 20 + offset, 236 + 150); 
+    let sOff = -ctx.measureText(str).width / 2;
+    ctx.fillText(str, OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 26 + sOff, 236 + sYOff); 
+
+    ctx.font = lSize + "px raptor";
+    let lOff = -ctx.measureText(lin).width / 2;
+    ctx.fillText(lin, OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 26 + lOff, 236 + lYOff + 150); 
 }
 
 function addScore(d){
@@ -497,6 +529,7 @@ function init(){
         ctx.drawImage(getTexture(UI_ELEMENTS[i].action), UI_ELEMENTS[i].x, UI_ELEMENTS[i].y, UI_ELEMENTS[i].w, UI_ELEMENTS[i].h);
     }
     setTimeout(function(){drawScore(0, 0)}, 50);
+    setTimeout(function(){drawScore(0, 0)}, 75);
     start();
 }
 
