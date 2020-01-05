@@ -523,12 +523,6 @@ window.onresize = function(){
     K = 640 / window.innerHeight;
 };
 K = 640 / window.innerHeight;
-function isCanvasSupported(){
-  var elem = document.createElement('canvas');
-  return !!(elem.getContext && elem.getContext('2d'));
-}
-
-if(!isCanvasSupported())alert('canvas not supported');
 
 let can = document.getElementById('canvas');
 let ctx = can.getContext('2d');
