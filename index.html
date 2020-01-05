@@ -252,7 +252,7 @@ function start(re){
     initFieldPoints();
     paused = false;
     OVER = false;
-    drawStatus('playing');
+    drawStatus();
     lines = 0;
     addScore(-score);
     // nextOne = {color: '', points: []};
@@ -263,6 +263,7 @@ function start(re){
 var paused = true;
 function togglePaused(){
     paused = !paused;
+    drawStatus();
 }
 
 function pause(){
@@ -275,15 +276,10 @@ function resume(){
 
 
 function step(){
-    if(OVER){
+    if(OVER || paused){
         return;
     }
 
-    drawStatus(paused ? 'paused' : 'playing');
-
-    if(paused){
-        return;
-    }
     down();
     render();
 }
@@ -417,16 +413,19 @@ function drawStatus(){
 }
 
 function drawScore(str, lin){
+    str = str == 0 ? '-' : str;
+    lin = lin == 0 ? '-' : lin;
     var canvas = document.getElementById("canvas");
     var ctx = canvas.getContext("2d");
     ctx.clearRect(OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 1, 250, 150, -35);
     ctx.clearRect(OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 1, 250 + 150, 150, -35);
-    ctx.font = "18px raptor";
-    ctx.fillStyle = '#000000';
 
-    let offset = (str.toString().length - 1) * -4;
+    let offset = (str.toString().length - 1) * -3;
+    ctx.font = (15 - (str.toString().length - 2)) + "px raptor";
+    ctx.fillStyle = '#000000';
     ctx.fillText(str, OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 20 + offset, 236); 
     offset = (lin.toString().length - 1) * -4;
+    ctx.font = (15 - (lin.toString().length - 2)) + "px raptor";
     ctx.fillText(lin, OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 20 + offset, 236 + 150); 
 }
 
