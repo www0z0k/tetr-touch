@@ -519,8 +519,8 @@ function inRect(x, y, rx, ry, rw, rh){
 
 function onDown(x, y){
     let needUpdate = false;
-    let data = ctx.getImageData(x, y, 1, 1).data;
-    console.log(data);
+    // let data = ctx.getImageData(x, y, 1, 1).data;
+    // console.log(data);
     for (var i = 0; i < UI_ELEMENTS.length; i++) {
         var el = UI_ELEMENTS[i];
         if(inRect(x, y, el.x, el.y, el.w, el.h)){
