@@ -22,15 +22,12 @@
                 left:0px;
                 height: 100%;
             }
+
             .hidden{
                 display: none;
             }
-            .button {
-                border: 1px solid black;
-                padding: 15px;
-                border-radius:10px;
-                font-size: 16px;
-                cursor: pointer;
+            .click-through{
+                pointer-events: none;
             }
            
         </style>
@@ -469,8 +466,8 @@ function addScore(d){
         <img class="topleft" src="img/bg.png">
         <!-- <img class="topleft" src="img/full.png"> -->
         <canvas class="topleft" width="360" height="640" id="canvas"></canvas>
-        <img class="topleft" style="display: none;" id="paused-overlay" src="img/paused.png">
-        <img class="topleft" style="display: none;" id="over-overlay"src="img/over.png">
+        <img class="topleft click-through" style="display: none;" id="paused-overlay" src="img/paused.png">
+        <img class="topleft click-through" style="display: none;" id="over-overlay"src="img/over.png">
 
     <script type="text/javascript">
 var xpatch = 10;
@@ -522,6 +519,8 @@ function inRect(x, y, rx, ry, rw, rh){
 
 function onDown(x, y){
     let needUpdate = false;
+    let data = ctx.getImageData(x, y, 1, 1).data;
+    console.log(data);
     for (var i = 0; i < UI_ELEMENTS.length; i++) {
         var el = UI_ELEMENTS[i];
         if(inRect(x, y, el.x, el.y, el.w, el.h)){
@@ -545,7 +544,8 @@ function onDown(x, y){
 }
 
 // can.addEventListener('touchstart', checkTouchDown);
-document.addEventListener('mousedown', checkDown);
+can.addEventListener('mousedown', checkDown);
+// document.addEventListener('mousedown', checkDown);
 
 
     </script>
