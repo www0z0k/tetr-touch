@@ -179,8 +179,8 @@ function spawnTetr(){
     pColor = nextOne.color;
     if(!allowTetr(globalTetrPosition(points))){
         paused = true;
-        drawStatus('GAME OVER');
         OVER = true;
+        drawStatus();
         render();
     }else{
         createNew();
@@ -408,13 +408,15 @@ function renderNew(){
     graphicsRender(graphics);
 }
 
-function drawStatus(str){
-    var canvas = document.getElementById("canvas");
-    var ctx = canvas.getContext("2d");
-    ctx.clearRect(80, 32, 80, -50);
-    ctx.font = "18px raptor";
-    ctx.fillStyle = '#000000';
-    ctx.fillText(str, 80, 25); 
+function drawStatus(){
+    // var canvas = document.getElementById("canvas");
+    // var ctx = canvas.getContext("2d");
+    // ctx.clearRect(80, 32, 80, -50);
+    // ctx.font = "18px raptor";
+    // ctx.fillStyle = '#000000';
+    // ctx.fillText(str, 80, 25); 
+    document.getElementById('paused-overlay').style.display = (paused && !OVER) ? 'block' : 'none';
+    document.getElementById('over-overlay').style.display = OVER ? 'block' : 'none';
 }
 
 function drawScore(str, lin){
@@ -464,11 +466,11 @@ function addScore(d){
 
             <img id="drop" src="img/big_btn.png">
         </div>
-        <script type="text/javascript" src="js/ui.js"></script>
-
         <img class="topleft" src="img/bg.png">
         <!-- <img class="topleft" src="img/full.png"> -->
         <canvas class="topleft" width="360" height="640" id="canvas"></canvas>
+        <img class="topleft" style="display: none;" id="paused-overlay" src="img/paused.png">
+        <img class="topleft" style="display: none;" id="over-overlay"src="img/over.png">
 
     <script type="text/javascript">
 var xpatch = 10;
@@ -543,7 +545,7 @@ function onDown(x, y){
 }
 
 // can.addEventListener('touchstart', checkTouchDown);
-can.addEventListener('mousedown', checkDown);
+document.addEventListener('mousedown', checkDown);
 
 
     </script>
