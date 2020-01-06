@@ -19,10 +19,10 @@
                  background-color: #ee8333;
             }
             .topleft{
-                position: absolute;
-                top:0px;
-                left:0px;
-                height: 100%;
+               margin: auto;
+               position: absolute;
+               top: 0; left: 0; bottom: 0; right: 0;
+               height: 100%;
             }
 
             .hidden{
@@ -496,9 +496,11 @@ function addScore(d){
             <img id="down" src="img/btn.png"> -->
 
             <img id="drop" src="img/big_btn.png">
+            <img id="bg" src="img/bg.png">
         </div>
-        <img class="topleft" src="img/bg.png">
+        <img class="topleft" src="img/not_supported.png">
         <!-- <img class="topleft" src="img/full.png"> -->
+        <canvas class="topleft" width="360" height="640" id="canvas-bg"></canvas>
         <canvas class="topleft" width="360" height="640" id="canvas"></canvas>
         <img class="topleft click-through" style="display: none;" id="paused-overlay" src="img/paused.png">
         <img class="topleft click-through" style="display: none;" id="over-overlay"src="img/over.png">
@@ -532,7 +534,11 @@ function init(){
         ctx.drawImage(getTexture(UI_ELEMENTS[i].action), UI_ELEMENTS[i].x, UI_ELEMENTS[i].y, UI_ELEMENTS[i].w, UI_ELEMENTS[i].h);
     }
     setTimeout(function(){drawScore(0, 0)}, 50);
-    setTimeout(function(){drawScore(0, 0)}, 75);
+
+    let canBG = document.getElementById('canvas-bg');
+    let ctxBG = canBG.getContext('2d');
+    ctxBG.drawImage(getTexture('bg'), 0, 0);
+
     start();
 }
 
