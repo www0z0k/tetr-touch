@@ -630,10 +630,10 @@ function onDown(x, y){
 can.addEventListener('mousedown', checkDown);
 console.log(window);
 console.log(window.parent);
-window.onkeydown = function(){
+document.onkeydown = function(){
 	console.log(123);
 }
-window.addEventListener('keydown', function(){
+document.addEventListener('keydown', function(){
 	console.log(345);
 });
 
