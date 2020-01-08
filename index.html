@@ -15,8 +15,8 @@
             }
             body{
                  -webkit-tap-highlight-color: transparent;
-                 /*background-color: #4a76a7;*/
-                 background-color: #ee8333;
+                 background-color: #4a76a7;
+                 /*background-color: #ee8333;*/
             }
             .topleft{
                margin: auto;
@@ -94,6 +94,7 @@ function paintFullLine(arr){
 }
 var score = 0;
 var lines = 0;
+var speed = 1;
 function checkFullLines(){
     var toKill = [];
     for(var i = fieldPoints.length - 1; i >= 0; i--){
@@ -451,6 +452,7 @@ function drawScore(str, lin){
     var canvas = document.getElementById("canvas");
     var ctx = canvas.getContext("2d");
     ctx.clearRect(OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 1, 250, 150, -35);
+    ctx.clearRect(OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 1, 250 + 75, 150, -35);
     ctx.clearRect(OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 1, 250 + 150, 150, -35);
 
     ctx.font = sSize + "px raptor";
@@ -458,9 +460,13 @@ function drawScore(str, lin){
     var sOff = -ctx.measureText(str).width / 2;
     ctx.fillText(str, OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 26 + sOff, 236 + sYOff); 
 
+    ctx.font = "18px raptor";
+    var spOff = -ctx.measureText(speed).width / 2;
+    ctx.fillText(speed, OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 26 + spOff, 236 + 75);
+	
     ctx.font = lSize + "px raptor";
     var lOff = -ctx.measureText(lin).width / 2;
-    ctx.fillText(lin, OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 26 + lOff, 236 + lYOff + 150); 
+    ctx.fillText(lin, OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 26 + lOff, 236 + lYOff + 150);
 }
 
 function addScore(d){
@@ -533,7 +539,7 @@ function init(){
     for (var i = 0; i < UI_ELEMENTS.length; i++) {
         ctx.drawImage(getTexture(UI_ELEMENTS[i].action), UI_ELEMENTS[i].x, UI_ELEMENTS[i].y, UI_ELEMENTS[i].w, UI_ELEMENTS[i].h);
     }
-    setTimeout(function(){drawScore(0, 0)}, 50);
+    setTimeout(function(){drawScore(0, 0)}, 250);
 
     var canBG = document.getElementById('canvas-bg');
     var ctxBG = canBG.getContext('2d');
