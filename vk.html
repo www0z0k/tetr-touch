@@ -45,7 +45,7 @@
 
         </script>
     </head>
-    <body onload="init()" onkeydown="handleKey(event)" onmousedown="checkDown(event)">
+    <body onload="init()">
         <!-- LOAD ASSETS HERE -->
         <div class="hidden">
             <img id="i-1" src="img/cubes/1.png">
@@ -75,7 +75,7 @@
         </div>
         <img class="topleft" src="img/not_supported.png">
         <!-- <img class="topleft" src="img/full.png"> -->
-        <canvas class="topleft click-through" width="360" height="640" id="canvas-bg"></canvas>
+        <canvas class="topleft" width="360" height="640" id="canvas-bg"></canvas>
         <canvas class="topleft" width="360" height="640" id="canvas"></canvas>
         <img class="topleft click-through" style="display: none;" id="paused-overlay" src="img/paused.png">
         <img class="topleft click-through" style="display: none;" id="over-overlay" src="img/over.png">
@@ -573,6 +573,10 @@ function init(){
     var canBG = document.getElementById('canvas-bg');
     var ctxBG = canBG.getContext('2d');
     ctxBG.drawImage(getTexture('bg'), 0, 0);
+	
+	document.body.addEventListener('mousedown', checkDown);
+	//document.body.addEventListener('keydown', handleKey);
+	document.body.addEventListener('keydown', handleKey);
 
     start();
 }
