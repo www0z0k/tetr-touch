@@ -495,7 +495,7 @@ function addScore(d){
 
         </script>
     </head>
-    <body onload="init()" onkeydown="handleKey(event)">
+    <body onload="init()">
         <!-- LOAD ASSETS HERE -->
         <div class="hidden">
             <img id="i-1" src="img/cubes/1.png">
@@ -582,7 +582,6 @@ function checkTouchDown(evt){
 }
 
 function inRect(x, y, rx, ry, rw, rh){
-	console.log(x, y, rx, ry, rw, rh);
     return (x > rx && x < rx + rw && y > ry && y < ry + rh);  
 }
 
@@ -618,6 +617,7 @@ function onDown(x, y){
 
 // can.addEventListener('touchstart', checkTouchDown);
 can.addEventListener('mousedown', checkDown);
+document.addEventListener('keydown', handleKey);
 // document.addEventListener('mousedown', checkDown);
 
 
