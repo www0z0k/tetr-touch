@@ -569,13 +569,13 @@ function init(){
 }
 
 function checkDown(evt){
-    evt.preventDefault();
+    //evt.preventDefault();
     var x = evt.clientX - rect.left;
     var y = evt.clientY - rect.top;
     onDown(x * K, y * K);
 }
 function checkTouchDown(evt){
-    evt.preventDefault();
+    //evt.preventDefault();
     var x = evt.touches[0].clientX - rect.left;
     var y = evt.touches[0].clientY - rect.top;
     onDown(x * K, y * K);
