@@ -358,7 +358,6 @@ function step(){
  * INPUT
  */
 function handleKey(evt){
-  console.log(evt);
     switch(evt.keyCode){
         case 37://left
             if(!paused)move(-1);
@@ -618,7 +617,6 @@ function onDown(x, y){
     }
     if(rulesOn && inRect(x, y, 340, 190, 20, 20)){
 		rulesComplete();
-		document.body.focus();
 	}
 	
     if(needUpdate){
@@ -628,21 +626,6 @@ function onDown(x, y){
 
 // can.addEventListener('touchstart', checkTouchDown);
 //can.addEventListener('mousedown', checkDown);
-console.log(window);
-document.onkeyup = function(){
-	console.log(123);
-}
-document.addEventListener('keyup', function(){
-	console.log(345);
-});
-
-document.body.onkeyup = function(){
-	console.log(121113);
-}
-document.body.addEventListener('keyup', function(){
-	console.log(341115);
-});
-
 
     </script>
     </body>
