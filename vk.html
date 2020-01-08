@@ -495,7 +495,7 @@ function addScore(d){
 
         </script>
     </head>
-    <body onload="init()">
+    <body onload="init()" onkeydown="handleKey(event)">
         <!-- LOAD ASSETS HERE -->
         <div class="hidden">
             <img id="i-1" src="img/cubes/1.png">
@@ -617,7 +617,6 @@ function onDown(x, y){
 
 // can.addEventListener('touchstart', checkTouchDown);
 can.addEventListener('mousedown', checkDown);
-document.addEventListener('keydown', handleKey);
 // document.addEventListener('mousedown', checkDown);
 
 
