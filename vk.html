@@ -45,7 +45,7 @@
 
         </script>
     </head>
-    <body onload="init()" onkeydown="handleKey(event)">
+    <body onload="init()" onkeydown="handleKey(event)" onmousedown="checkDown(evt)">
         <!-- LOAD ASSETS HERE -->
         <div class="hidden">
             <img id="i-1" src="img/cubes/1.png">
@@ -75,8 +75,8 @@
         </div>
         <img class="topleft" src="img/not_supported.png">
         <!-- <img class="topleft" src="img/full.png"> -->
-        <canvas class="topleft" width="360" height="640" id="canvas-bg"></canvas>
-        <canvas class="topleft" width="360" height="640" id="canvas"></canvas>
+        <canvas class="topleft click-through" width="360" height="640" id="canvas-bg"></canvas>
+        <canvas class="topleft click-through" width="360" height="640" id="canvas"></canvas>
         <img class="topleft click-through" style="display: none;" id="paused-overlay" src="img/paused.png">
         <img class="topleft click-through" style="display: none;" id="over-overlay" src="img/over.png">
         <img class="topleft click-through" style="display: none;" id="rules-overlay" src="img/rules.png">
@@ -627,7 +627,7 @@ function onDown(x, y){
 }
 
 // can.addEventListener('touchstart', checkTouchDown);
-can.addEventListener('mousedown', checkDown);
+//can.addEventListener('mousedown', checkDown);
 console.log(window);
 console.log(window.parent);
 document.onkeydown = function(){
