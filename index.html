@@ -15,8 +15,8 @@
             }
             body{
                  -webkit-tap-highlight-color: transparent;
-                 background-color: #4a76a7;
-                 /*background-color: #ee8333;*/
+                 /*background-color: #4a76a7;*/
+                 background-color: #ee8333;
             }
             .topleft{
                margin: auto;
@@ -569,20 +569,16 @@ function init(){
 }
 
 function checkDown(evt){
-    evt.preventDefault();
+    if(mobileAndTabletcheck()){
+		evt.preventDefault();
+	}
     var x = evt.clientX - rect.left;
     var y = evt.clientY - rect.top;
     onDown(x * K, y * K);
 }
-function checkTouchDown(evt){
-    evt.preventDefault();
-    var x = evt.touches[0].clientX - rect.left;
-    var y = evt.touches[0].clientY - rect.top;
-    onDown(x * K, y * K);
-}
+
 
 function inRect(x, y, rx, ry, rw, rh){
-	console.log(x, y, rx, ry, rw, rh);
     return (x > rx && x < rx + rw && y > ry && y < ry + rh);  
 }
 
@@ -616,9 +612,7 @@ function onDown(x, y){
     }
 }
 
-// can.addEventListener('touchstart', checkTouchDown);
 can.addEventListener('mousedown', checkDown);
-// document.addEventListener('mousedown', checkDown);
 
 
     </script>
