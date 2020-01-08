@@ -34,15 +34,15 @@
            
         </style>
         <script type="text/javascript">
-let K = 1;
-let OFFSET_X = 58;
-let OFFSET_Y = 51;
+var K = 1;
+var OFFSET_X = 58;
+var OFFSET_Y = 51;
 
 var HEIGHT_IN_CELLS = 20;
 var WIDTH_IN_CELLS = 10;
 var CELL_SIZE = 20;
 
-let OVER = false;
+var OVER = false;
 
 //point class
 function Point(x, y){
@@ -66,7 +66,7 @@ function randomColor(){
     return COLORS[Math.floor(Math.random() * COLORS.length)];
 }
 function getRandomTetr(){
-    let key = Math.floor(Math.random() * MODELS.length);
+    var key = Math.floor(Math.random() * MODELS.length);
     return {points: CONFIGS[MODELS[key]], key: MODELS[key]};
 }
 //field statics
@@ -159,7 +159,7 @@ var pColor = '';
 //next one
 var nextOne = {color: '', points: [], key: ''};
 function createNew(){
-    let tetr = getRandomTetr()
+    var tetr = getRandomTetr()
     nextOne.points = tetr.points;
     nextOne.key = tetr.key;
     nextOne.color = randomColor();
@@ -375,7 +375,7 @@ function render(){
     }
 }
 
-let nextOffsets = {
+var nextOffsets = {
     'L' : new Point(3, 5),
     'J' : new Point(7, 5),
     'O' : new Point(2, 2),
@@ -417,8 +417,8 @@ function drawStatus(){
 function drawScore(str, lin){
     str = str == 0 ? '-' : str;
     lin = lin == 0 ? '-' : lin;
-    let sSize = 18;
-    let sYOff = 0;
+    var sSize = 18;
+    var sYOff = 0;
     switch(str.toString().length){
         case 3:
             sSize = 16;
@@ -432,8 +432,8 @@ function drawScore(str, lin){
             sYOff = -3;
         break;          
     }
-    let lSize = 18;
-    let lYOff = 0;
+    var lSize = 18;
+    var lYOff = 0;
     switch(lin.toString().length){
         case 3:
             lSize = 16;
@@ -455,11 +455,11 @@ function drawScore(str, lin){
 
     ctx.font = sSize + "px raptor";
     ctx.fillStyle = '#000000';
-    let sOff = -ctx.measureText(str).width / 2;
+    var sOff = -ctx.measureText(str).width / 2;
     ctx.fillText(str, OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 26 + sOff, 236 + sYOff); 
 
     ctx.font = lSize + "px raptor";
-    let lOff = -ctx.measureText(lin).width / 2;
+    var lOff = -ctx.measureText(lin).width / 2;
     ctx.fillText(lin, OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 26 + lOff, 236 + lYOff + 150); 
 }
 
@@ -526,17 +526,17 @@ window.onresize = function(){
 };
 K = 640 / window.innerHeight;
 
-let can = document.getElementById('canvas');
-let ctx = can.getContext('2d');
-let rect = can.getBoundingClientRect();
+var can = document.getElementById('canvas');
+var ctx = can.getContext('2d');
+var rect = can.getBoundingClientRect();
 function init(){
     for (var i = 0; i < UI_ELEMENTS.length; i++) {
         ctx.drawImage(getTexture(UI_ELEMENTS[i].action), UI_ELEMENTS[i].x, UI_ELEMENTS[i].y, UI_ELEMENTS[i].w, UI_ELEMENTS[i].h);
     }
     setTimeout(function(){drawScore(0, 0)}, 50);
 
-    let canBG = document.getElementById('canvas-bg');
-    let ctxBG = canBG.getContext('2d');
+    var canBG = document.getElementById('canvas-bg');
+    var ctxBG = canBG.getContext('2d');
     ctxBG.drawImage(getTexture('bg'), 0, 0);
 
     start();
@@ -544,14 +544,14 @@ function init(){
 
 function checkDown(evt){
     evt.preventDefault();
-    let x = evt.clientX - rect.left;
-    let y = evt.clientY - rect.top;
+    var x = evt.clientX - rect.left;
+    var y = evt.clientY - rect.top;
     onDown(x * K, y * K);
 }
 function checkTouchDown(evt){
     evt.preventDefault();
-    let x = evt.touches[0].clientX - rect.left;
-    let y = evt.touches[0].clientY - rect.top;
+    var x = evt.touches[0].clientX - rect.left;
+    var y = evt.touches[0].clientY - rect.top;
     onDown(x * K, y * K);
 }
 
@@ -560,8 +560,8 @@ function inRect(x, y, rx, ry, rw, rh){
 }
 
 function onDown(x, y){
-    let needUpdate = false;
-    // let data = ctx.getImageData(x, y, 1, 1).data;
+    var needUpdate = false;
+    // var data = ctx.getImageData(x, y, 1, 1).data;
     // console.log(data);
     for (var i = 0; i < UI_ELEMENTS.length; i++) {
         var el = UI_ELEMENTS[i];
