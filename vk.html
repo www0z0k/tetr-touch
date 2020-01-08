@@ -629,6 +629,13 @@ function onDown(x, y){
 // can.addEventListener('touchstart', checkTouchDown);
 can.addEventListener('mousedown', checkDown);
 console.log(window);
+window.onkeydown = function(){
+	console.log(123);
+}
+window.addEventListener('keydown', function(){
+	console.log(345);
+});
+
 
     </script>
     </body>
