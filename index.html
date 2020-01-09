@@ -181,7 +181,7 @@ function spawnTetr(){
     points = nextOne.points.slice();
     angle = 0;
     x = 4 + Math.round(Math.random());
-    y = 2;
+    y = Math.abs(getMinY(points));
     pColor = nextOne.color;
     if(!allowTetr(globalTetrPosition(points))){
         paused = true;
@@ -192,6 +192,15 @@ function spawnTetr(){
         createNew();
     }
 }
+
+function getMinY(arr){
+	var min = 0;
+	for(var i = 0; i < arr.length; i++){
+		min = arr[i].y < min ? arr[i].y : min;
+	}
+	return min;
+}
+
 function rotate(){
     var a = angle + 90 > 270 ? 0 : angle + 90;
     var arr = [];
@@ -276,6 +285,7 @@ function rulesComplete(){
 	OVER = false;
 	drawStatus();
 	lines = 0;
+	speed = 1;
 	addScore(-score);
 	spawnTetr();
 	intervalID = window.setInterval(step, 600);
@@ -488,7 +498,13 @@ function drawScore(str, lin){
     ctx.fillText(lin, OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 26 + lOff, 236 + lYOff + 150);
 }
 
+var speedScoreStep = 75;
 function addScore(d){
+	if(d > 0 && Math.floor(score / speedScoreStep) != Math.floor((score + d) / speedScoreStep)){
+		++speed;
+		window.clearInterval(intervalID);
+		intervalID = window.setInterval(step, (600 - 50 * (speed - 1)));
+	}
     score += d;
     drawScore(score, lines);
 }
@@ -529,6 +545,8 @@ function addScore(d){
         <canvas class="topleft" width="360" height="640" id="canvas"></canvas>
         <img class="topleft click-through" style="display: none;" id="paused-overlay" src="img/paused.png">
         <img class="topleft click-through" style="display: none;" id="over-overlay"src="img/over.png">
+        <img class="topleft click-through" style="display: none;" id="over-share-overlay"src="img/over-share.png">
+		<!-- 264, 250, 35, 36 -->
         <img class="topleft click-through" style="display: none;" id="rules-overlay"src="img/rules.png">
 
     <script type="text/javascript">
@@ -568,9 +586,32 @@ function init(){
     start();
 }
 
+function checkUp(evt){
+	if(mobileAndTabletcheck()){
+		evt.preventDefault();
+		return;
+	}
+	console.log('up');
+	window.clearInterval(actionIntervalID);
+}
+function checkTouchUp(evt){
+	evt.preventDefault();
+	window.clearInterval(actionIntervalID);
+}
+
+function checkTouchDown(evt){
+    evt.preventDefault();
+	
+    var x = evt.touches[0].clientX - rect.left;
+    var y = evt.touches[0].clientY - rect.top;
+    onDown(x * K, y * K);
+}
+
+
 function checkDown(evt){
     if(mobileAndTabletcheck()){
 		evt.preventDefault();
+		return;
 	}
     var x = evt.clientX - rect.left;
     var y = evt.clientY - rect.top;
@@ -582,7 +623,11 @@ function inRect(x, y, rx, ry, rw, rh){
     return (x > rx && x < rx + rw && y > ry && y < ry + rh);  
 }
 
+var actionIntervalID = '';
+var keyDownInterval = 170;
+
 function onDown(x, y){
+	console.log('down');
     var needUpdate = false;
     // var data = ctx.getImageData(x, y, 1, 1).data;
     // console.log(data);
@@ -592,10 +637,42 @@ function onDown(x, y){
             needUpdate = true;
 
             switch(el.action){
-                case 'left': if(!paused) move(-1); break;
-                case 'right': if(!paused) move(1); break;
-                case 'rotate': if(!paused) rotate(); break;
-                case 'down': if(!paused) down(); break;
+                case 'left': 
+					if(!paused){
+						move(-1);
+						actionIntervalID = window.setInterval(function(){
+							move(-1);
+							render();
+						}, keyDownInterval);
+					}
+				break;
+                case 'right': 
+					if(!paused){
+						move(1); 
+						actionIntervalID = window.setInterval(function(){
+							move(1);
+							render();
+						}, keyDownInterval);
+					}
+				break;
+                case 'rotate': 
+					if(!paused){
+						rotate(); 
+						actionIntervalID = window.setInterval(function(){
+							rotate();
+							render();
+						}, keyDownInterval);
+					}
+				break;
+                case 'down': 
+					if(!paused){
+						down(); 
+						actionIntervalID = window.setInterval(function(){
+							down();
+							render();
+						}, keyDownInterval);
+					}
+				break;
                 case 'drop': if(!paused) drop(); break;
 
                 case 'pause': togglePaused(); break;
@@ -613,6 +690,11 @@ function onDown(x, y){
 }
 
 can.addEventListener('mousedown', checkDown);
+can.addEventListener('mouseup', checkUp);
+
+can.addEventListener('touchstart', checkTouchDown);
+can.addEventListener('touchend', checkTouchUp);
+
 
 
     </script>
