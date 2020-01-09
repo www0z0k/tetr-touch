@@ -500,7 +500,7 @@ function drawScore(str, lin){
 
 var speedScoreStep = 75;
 function addScore(d){
-	if(d > 0 && Math.floor(score / speedScoreStep != Math.floor((score + d) / speedScoreStep))){
+	if(d > 0 && Math.floor(score / speedScoreStep) != Math.floor((score + d) / speedScoreStep)){
 		++speed;
 		window.clearInterval(intervalID);
 		intervalID = window.setInterval(step, (600 - 50 * (speed - 1)));
