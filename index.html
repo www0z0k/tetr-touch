@@ -395,7 +395,8 @@ function render(){
         graphics.beginPath();
         graphics.fillStyle = k;
         for(var i = 0; i < colors[k].length; i++){
-            if(k == EMPTY || k == '#ffffff'){
+            if(k == EMPTY){}
+			else if(k == '#ffffff'){
                 pathRect(graphics, OFFSET_X + colors[k][i].x * CELL_SIZE, OFFSET_Y + colors[k][i].y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
             }else{
                 graphics.drawImage(getTexture(k), OFFSET_X + colors[k][i].x * CELL_SIZE, OFFSET_Y + colors[k][i].y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
@@ -434,12 +435,6 @@ function renderNew(){
 }
 
 function drawStatus(){
-    // var canvas = document.getElementById("canvas");
-    // var ctx = canvas.getContext("2d");
-    // ctx.clearRect(80, 32, 80, -50);
-    // ctx.font = "18px raptor";
-    // ctx.fillStyle = '#000000';
-    // ctx.fillText(str, 80, 25); 
     document.getElementById('paused-overlay').style.display = (paused && !OVER) ? 'block' : 'none';
     document.getElementById('over-overlay').style.display = OVER ? 'block' : 'none';
 }
