@@ -181,7 +181,7 @@ function spawnTetr(){
     points = nextOne.points.slice();
     angle = 0;
     x = 4 + Math.round(Math.random());
-    y = 2;
+    y = Math.abs(getMinY(points));
     pColor = nextOne.color;
     if(!allowTetr(globalTetrPosition(points))){
         paused = true;
@@ -192,6 +192,15 @@ function spawnTetr(){
         createNew();
     }
 }
+
+function getMinY(arr){
+	var min = 0;
+	for(var i = 0; i < arr.length; i++){
+		min = arr[i].y < min ? arr[i].y : min;
+	}
+	return min;
+}
+
 function rotate(){
     var a = angle + 90 > 270 ? 0 : angle + 90;
     var arr = [];
