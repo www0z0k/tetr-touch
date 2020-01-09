@@ -587,11 +587,31 @@ function init(){
 }
 
 function checkUp(evt){
+	if(mobileAndTabletcheck()){
+		evt.preventDefault();
+		return;
+	}
+	console.log('up');
 	window.clearInterval(actionIntervalID);
 }
+function checkTouchUp(evt){
+	evt.preventDefault();
+	window.clearInterval(actionIntervalID);
+}
+
+function checkTouchDown(evt){
+    evt.preventDefault();
+	
+    var x = evt.touches[0].clientX - rect.left;
+    var y = evt.touches[0].clientY - rect.top;
+    onDown(x * K, y * K);
+}
+
+
 function checkDown(evt){
     if(mobileAndTabletcheck()){
 		evt.preventDefault();
+		return;
 	}
     var x = evt.clientX - rect.left;
     var y = evt.clientY - rect.top;
@@ -607,6 +627,7 @@ var actionIntervalID = '';
 var keyDownInterval = 170;
 
 function onDown(x, y){
+	console.log('down');
     var needUpdate = false;
     // var data = ctx.getImageData(x, y, 1, 1).data;
     // console.log(data);
@@ -670,6 +691,10 @@ function onDown(x, y){
 
 can.addEventListener('mousedown', checkDown);
 can.addEventListener('mouseup', checkUp);
+
+can.addEventListener('touchstart', checkTouchDown);
+can.addEventListener('touchend', checkTouchUp);
+
 
 
     </script>
