@@ -276,6 +276,7 @@ function rulesComplete(){
 	OVER = false;
 	drawStatus();
 	lines = 0;
+	speed = 1;
 	addScore(-score);
 	spawnTetr();
 	intervalID = window.setInterval(step, 600);
@@ -488,7 +489,13 @@ function drawScore(str, lin){
     ctx.fillText(lin, OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 26 + lOff, 236 + lYOff + 150);
 }
 
+var speedScoreStep = 75;
 function addScore(d){
+	if(d > 0 && Math.floor(score / speedScoreStep != Math.floor((score + d) / speedScoreStep))){
+		++speed;
+		window.clearInterval(intervalID);
+		intervalID = window.setInterval(step, (600 - 50 * (speed - 1)));
+	}
     score += d;
     drawScore(score, lines);
 }
@@ -570,6 +577,9 @@ function init(){
     start();
 }
 
+function checkUp(evt){
+	window.clearInterval(actionIntervalID);
+}
 function checkDown(evt){
     if(mobileAndTabletcheck()){
 		evt.preventDefault();
@@ -584,6 +594,9 @@ function inRect(x, y, rx, ry, rw, rh){
     return (x > rx && x < rx + rw && y > ry && y < ry + rh);  
 }
 
+var actionIntervalID = '';
+var keyDownInterval = 170;
+
 function onDown(x, y){
     var needUpdate = false;
     // var data = ctx.getImageData(x, y, 1, 1).data;
@@ -594,10 +607,42 @@ function onDown(x, y){
             needUpdate = true;
 
             switch(el.action){
-                case 'left': if(!paused) move(-1); break;
-                case 'right': if(!paused) move(1); break;
-                case 'rotate': if(!paused) rotate(); break;
-                case 'down': if(!paused) down(); break;
+                case 'left': 
+					if(!paused){
+						move(-1);
+						actionIntervalID = window.setInterval(function(){
+							move(-1);
+							render();
+						}, keyDownInterval);
+					}
+				break;
+                case 'right': 
+					if(!paused){
+						move(1); 
+						actionIntervalID = window.setInterval(function(){
+							move(1);
+							render();
+						}, keyDownInterval);
+					}
+				break;
+                case 'rotate': 
+					if(!paused){
+						rotate(); 
+						actionIntervalID = window.setInterval(function(){
+							rotate();
+							render();
+						}, keyDownInterval);
+					}
+				break;
+                case 'down': 
+					if(!paused){
+						down(); 
+						actionIntervalID = window.setInterval(function(){
+							down();
+							render();
+						}, keyDownInterval);
+					}
+				break;
                 case 'drop': if(!paused) drop(); break;
 
                 case 'pause': togglePaused(); break;
@@ -615,6 +660,7 @@ function onDown(x, y){
 }
 
 can.addEventListener('mousedown', checkDown);
+can.addEventListener('mouseup', checkUp);
 
 
     </script>
