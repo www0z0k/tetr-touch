@@ -114,6 +114,7 @@ function moveAllAfter(next){
 }
 
 function move(){
+	doubleState = '';
 	if(changeDir){
 		changeDir = false;
 		dx = ndx;
@@ -200,29 +201,48 @@ function rulesComplete(){
 var ndx = 0;
 var ndy = 0;
 var changeDir;
+
+var doubleState = '';
+
 function toLeft(){
 	if(dy == 0 && dx == 1)return;
 	ndx = -1;
 	ndy = 0;
 	changeDir = true;
+	if(doubleState == 'left'){
+		move();
+	}
+	doubleState = 'left';
 }
 function toRight(){
 	if(dy == 0 && dx == -1)return;
 	ndx = 1;
 	ndy = 0;
 	changeDir = true;
+	if(doubleState == 'right'){
+		move();
+	}
+	doubleState = 'right';
 }
 function toUp(){
 	if(dx == 0 && dy == 1)return;
 	ndx = 0;
 	ndy = -1;
 	changeDir = true;
+	if(doubleState == 'up'){
+		move();
+	}
+	doubleState = 'up';
 }
 function toDown(){
 	if(dx == 0 && dy == -1)return;
 	ndx = 0;
 	ndy = 1;
 	changeDir = true;
+	if(doubleState == 'up'){
+		move();
+	}
+	doubleState = 'up';
 }
 function handleKey(evt){
   //console.log(evt);
