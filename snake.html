@@ -48,228 +48,121 @@ var HEIGHT_IN_CELLS = 20;
 var WIDTH_IN_CELLS = 10;
 var CELL_SIZE = 20;
 
+var score = 0;
+var speed = 1;
+var lines = 1;
+
+
+var paused = false;
 var OVER = false;
 
+var foodz = [];
+var cellz = [new Point(5, 10)];
+var dx = 1;
+var dy = 0;
+
 //point class
-function Point(x, y){
+function Point(x, y, color){
     this.x = x;
     this.y = y;
+    this.color = color;
+	this.clone = function() { 
+		return new Point(this.x, this.y, this.color);
+	}
 }
-Point.prototype = { x : 0, y : 0, constructor : Point};
-//tetrs theory
-var MODELS = ['L', 'J', 'O', 'I', 'Z', 'S', 'T'];
-var CONFIGS = {
-    'L' : [new Point(0, -2), new Point(0, -1), new Point(0, 0), new Point(1, 0)],
-    'J' : [new Point(0, -2), new Point(0, -1), new Point(0, 0), new Point(-1, 0)],
-    'O' : [new Point(0, -1), new Point(1, -1), new Point(1, 0), new Point(0, 0)],
-    'I' : [new Point(0, -2), new Point(0, -1), new Point(0, 0), new Point(0, 1)],
-    'Z' : [new Point(-1, -1), new Point(0, -1), new Point(0, 0), new Point(1, 0)],
-    'S' : [new Point(1, -1), new Point(0, -1), new Point(0, 0), new Point(-1, 0)],
-    'T' : [new Point(-1, 0), new Point(0, 0), new Point(1, 0), new Point(0, 1)]
+Point.prototype = {
+	x : 0, 
+	y : 0, 
+	color : 0, 
+	constructor : Point	
 };
+
 var COLORS = ['i-1', 'i-2', 'i-3', 'i-4', 'i-5', 'i-6', 'i-7'];
 function randomColor(){
     return COLORS[Math.floor(Math.random() * COLORS.length)];
 }
-function getRandomTetr(){
-    var key = Math.floor(Math.random() * MODELS.length);
-    return {points: CONFIGS[MODELS[key]], key: MODELS[key]};
-}
-//field statics
-//field 10x20
-//access fieldPoints[y][x]
-var EMPTY = 'rgba(125, 125, 125, 0)';
-// var EMPTY = '#c0c0c0';
-var DEAD = '#ffffff';
 
-function getEmptyLine(){//10 empty (white) cells
-    return [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY];
-}
-function isLineFull(arr){
-    for(var i = 0; i < arr.length; i++){
-        if(arr[i] == EMPTY){
-            return false;
-        }
-    }
-    return true;
-}
-function paintFullLine(arr){
-    for(var i = 0; i < arr.length; i++){   
-        arr[i] = DEAD;
-    }
-}
-var score = 0;
-var lines = 0;
-var speed = 1;
-function checkFullLines(){
-    var toKill = [];
-    for(var i = fieldPoints.length - 1; i >= 0; i--){
-        if(isLineFull(fieldPoints[i])){
-            toKill.push(i);
-            paintFullLine(fieldPoints[i]);
-        }
-    }
-    render();
-    if(toKill.length){
-        lines += toKill.length;
-        var deltaScore = 1 * toKill.length + (toKill.length - 1) * (toKill.length - 1) * 1;
-        addScore(deltaScore);
-        // console.log('+ ' + deltaScore);
-        paused = true;
-        setTimeout(function(){
-            for(var k = 0; k < toKill.length; k++){
-                fieldPoints.splice(toKill[k], 1);
-            }
-            for(var k = 0; k < toKill.length; k++){
-                fieldPoints.unshift(getEmptyLine());
-            }
-            toKill = [];
-            render();
-            paused = false;
-        }, 150);    
-    }
-}
-var fieldPoints = [];
-function initFieldPoints(){
-    fieldPoints = [];
-    for(var i = 0; i < HEIGHT_IN_CELLS; i++){
-        fieldPoints.push(getEmptyLine());
-    }
-}
-function isPointFree(x, y){
-    if(!fieldPoints[y]){
-        return false;
-    }
-    if(!fieldPoints[y][x]){
-        return false;
-    }
-    return fieldPoints[y][x] == EMPTY;
-}
-function allowTetr(arr){
-    for(var i = 0; i < arr.length; i++){
-        if(!isPointFree(arr[i].x, arr[i].y)){
-            return false;
-        }
-    }
-    return true;
-}
-function addPoint(x, y, color){
-    fieldPoints[y][x] = color;
-}
-//current tetr
-var angle = 0;
-var x = 4;
-var y = 2;
-var points = [];
-var pColor = '';
-
-//next one
-var nextOne = {color: '', points: [], key: ''};
-function createNew(){
-    var tetr = getRandomTetr()
-    nextOne.points = tetr.points;
-    nextOne.key = tetr.key;
-    nextOne.color = randomColor();
-
-    renderNew();
-}
-
-function spawnTetr(){
-    if(!nextOne.color){
-        createNew();
-    }
-    points = nextOne.points.slice();
-    angle = 0;
-    x = 4 + Math.round(Math.random());
-    y = Math.abs(getMinY(points));
-    pColor = nextOne.color;
-    if(!allowTetr(globalTetrPosition(points))){
-        paused = true;
-        OVER = true;
-        drawStatus();
-        render();
-    }else{
-        createNew();
-    }
-}
-
-function getMinY(arr){
-	var min = 0;
+function pointInArr(p, arr){
 	for(var i = 0; i < arr.length; i++){
-		min = arr[i].y < min ? arr[i].y : min;
+		if(arr[i].x == p.x && arr[i].y == p.y){
+			return i;
+		}
 	}
-	return min;
+	return -1;
 }
 
-function rotate(){
-    var a = angle + 90 > 270 ? 0 : angle + 90;
-    var arr = [];
-    if(a == 90 || a == 270){
-        for(var i = 0; i < points.length; i++){
-            arr[i] = new Point(-points[i].y, points[i].x);
-        }
-    }else{
-        for(var i = 0; i < points.length; i++){
-            arr[i] = new Point(-points[i].y, points[i].x);
-        }
-    }
-    //check
-    if(allowTetr(globalTetrPosition(arr))){
-        angle = a;
-        points = arr;
-    }
+function getAllEmpty(){
+	var arr = [];
+	for(var i = 0; i < WIDTH_IN_CELLS; i++){
+		for(var j = 0; j < HEIGHT_IN_CELLS; j++){
+			var p = new Point(i, j);
+			if(pointInArr(p, foodz) == -1 && pointInArr(p, cellz) == -1){
+				arr.push(p);
+			}
+		}	
+	}
+	return arr;
 }
-function move(d){
-    //check
-    if(allowTetr(globalTetrPosition(points, d))){
-        x += d;
-    }
+
+function moveAllAfter(next){
+	for(var i = 0; i < cellz.length; i++){
+		var n1 = cellz[i].clone();
+		cellz[i].x = next.x;
+		cellz[i].y = next.y;
+		next = n1;
+	}
 }
-/**
- * 
- * @returns {boolean - can move further down}
- */
-function down(){
-    //check
-    if(allowTetr(globalTetrPosition(points, 0, 1))){
-        ++y;
-        return true;
-    }
-    die();
-    checkFullLines();
-    spawnTetr();
-    return false;
+
+function move(){
+	if(changeDir){
+		changeDir = false;
+		dx = ndx;
+		dy = ndy;
+	}
+	var next = new Point(cellz[0].x + dx, cellz[0].y + dy);
+	if(next.x < 0 || next.y < 0 || next.x >= WIDTH_IN_CELLS || next.y >= HEIGHT_IN_CELLS || pointInArr(next, cellz) > -1){
+		OVER = true;
+		drawStatus();
+		return;
+	}
+	var foodIndex = pointInArr(next, foodz);
+	if(foodIndex > -1){
+		foodz.splice(foodIndex, 1);
+		cellz.push(new Point(0, 0));
+		addScore(1);
+	}
+	
+	moveAllAfter(next);
+	
+	if(foodIndex == -1 && foodz.length == 0){
+		//spawn food
+		var avails = getAllEmpty();
+		var rnd = avails[Math.floor(Math.random() * avails.length)];
+		foodz.push(new Point(rnd.x, rnd.y, randomColor()));
+	}
+	
+	render();
 }
-function drop(){
-    while(down()){
-        
-    }
+
+function togglePaused(){
+    paused = !paused;
+    drawStatus();
 }
-function die(){
-    var arr = globalTetrPosition(points);
-    for(var i = 0; i < arr.length; i++){
-        addPoint(arr[i].x, arr[i].y, pColor);
+
+function step(){
+    if(OVER || paused){
+        return;
     }
+	
+    move();
 }
-function globalTetrPosition(arr, dx, dy){
-    dx = dx || 0;
-    dy = dy || 0;
-    var res = [];
-    for(var i = 0; i < arr.length; i++){
-        res[i] = new Point(arr[i].x + x + dx, arr[i].y + y + dy);
-    }
-    return res;
-}
-/**
- * GAMEPLAY
- */
+
 var rulesOn = false;
 //var glass;
 var intervalID = '';
 function start(re){    
     window.clearInterval(intervalID);
-    initFieldPoints();
-	
+
 	if(!re && !mobileAndTabletcheck()){
 		document.getElementById('rules-overlay').style.display = 'block';
 		rulesOn = true;
@@ -287,54 +180,64 @@ function rulesComplete(){
 	lines = 0;
 	speed = 1;
 	addScore(-score);
-	spawnTetr();
-	intervalID = window.setInterval(step, 600);
-	render();
-}
+	intervalID = window.setInterval(step, 450);
+	
+	foodz = [];
+	cellz = [new Point(5, 10)];
 
-var paused = true;
-function togglePaused(){
-    paused = !paused;
-    drawStatus();
-}
-
-function pause(){
-    paused = true;
-}
-
-function resume(){
-    paused = false;
+	dx = 1;
+	dy = 0;
+	ndx = 0;
+	ndy = 0;
+	changeDir = false;
+	move();
 }
 
 
-function step(){
-    if(OVER || paused){
-        return;
-    }
-
-    down();
-    render();
-}
 /**
  * INPUT
  */
+var ndx = 0;
+var ndy = 0;
+var changeDir;
+function toLeft(){
+	if(dy == 0 && dx == 1)return;
+	ndx = -1;
+	ndy = 0;
+	changeDir = true;
+}
+function toRight(){
+	if(dy == 0 && dx == -1)return;
+	ndx = 1;
+	ndy = 0;
+	changeDir = true;
+}
+function toUp(){
+	if(dx == 0 && dy == 1)return;
+	ndx = 0;
+	ndy = -1;
+	changeDir = true;
+}
+function toDown(){
+	if(dx == 0 && dy == -1)return;
+	ndx = 0;
+	ndy = 1;
+	changeDir = true;
+}
 function handleKey(evt){
   //console.log(evt);
     switch(evt.keyCode){
         case 37://left
-            if(!paused)move(-1);
+            toLeft();
         break;
         case 39://right
-            if(!paused)move(1);
+            toRight();
         break;
         case 38://up
-            if(!paused)rotate();
+            toUp();
         break;
         case 40://down
-            if(!paused)down();
-        break;
-        case 32://space
-            if(!paused)drop();
+            toDown();
         break;
         case 27://escape
             togglePaused();
@@ -342,7 +245,6 @@ function handleKey(evt){
     }
     evt.preventDefault();
     evt.stopImmediatePropagation();
-    render();
 }
 /**
  * RENDER
@@ -367,71 +269,19 @@ function graphicsRender(gr){
     // gr.stroke();
 }
 function render(){
-    //PRE - RENDER
-    var currentPos = globalTetrPosition(points);
-    var colors = {};
-    for(var i = 0; i < HEIGHT_IN_CELLS; i++){//y
-        for(var k = 0; k < 10; k++){//x
-            if(!colors[fieldPoints[i][k]]){
-                colors[fieldPoints[i][k]] = [];
-            }
-            colors[fieldPoints[i][k]].push(new Point(k, i));
-        }
-    }
-    for(var c = 0; c < currentPos.length; c++){
-        if(!colors[pColor]){
-            colors[pColor] = [];
-        }
-        colors[pColor].push(new Point(currentPos[c].x, currentPos[c].y));
-    }
-
     //RENDER
     var can = document.getElementById('canvas');
     var graphics = can.getContext('2d');
     graphics.clearRect(OFFSET_X, OFFSET_Y, WIDTH_IN_CELLS * CELL_SIZE, HEIGHT_IN_CELLS * CELL_SIZE);
-    graphics.strokeStyle = "#000000";
-    graphics.lineWidth = 1;
-    for(var k in colors){
-        graphics.beginPath();
-        graphics.fillStyle = k;
-        for(var i = 0; i < colors[k].length; i++){
-            if(k == EMPTY){}
-			else if(k == '#ffffff'){
-                pathRect(graphics, OFFSET_X + colors[k][i].x * CELL_SIZE, OFFSET_Y + colors[k][i].y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-            }else{
-                graphics.drawImage(getTexture(k), OFFSET_X + colors[k][i].x * CELL_SIZE, OFFSET_Y + colors[k][i].y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-            }
-        }
-        graphicsRender(graphics);
-    }
-}
-
-var nextOffsets = {
-    'L' : new Point(3, 5),
-    'J' : new Point(7, 5),
-    'O' : new Point(2, 2),
-    'I' : new Point(5, 1.5),
-    'Z' : new Point(5, 2),
-    'S' : new Point(5, 2),
-    'T' : new Point(5.5, -4)
-};
-function renderNew(){
-    var can = document.getElementById('canvas');
-    var graphics = can.getContext('2d');
-    var startX = 274;
-    var startY = 152;
-    graphics.clearRect(startX - 14, startY - 14, 6 * 7, 6 * 7);
-    graphics.strokeStyle = "#000000";
-    graphics.lineWidth = 2;
-    graphics.beginPath();
-
-    for (var i = 0; i < nextOne.points.length; i++) {
-        graphics.drawImage(getTexture(nextOne.color), 
-            startX + (nextOne.points[i].x) * 7 + nextOffsets[nextOne.key].x, 
-            (nextOne.points[i].y) * 7 + startY + nextOffsets[nextOne.key].y, 
-            7, 7);
-    }
-    graphicsRender(graphics);
+    
+	for(var i = 0; i < cellz.length; i++){
+        graphics.drawImage(getTexture(i == 0 ? 'main-head' : 'main'), OFFSET_X + cellz[i].x * CELL_SIZE, OFFSET_Y + cellz[i].y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+	}
+	for(var i = 0; i < foodz.length; i++){
+        graphics.drawImage(getTexture(foodz[i].color), OFFSET_X + foodz[i].x * CELL_SIZE, OFFSET_Y + foodz[i].y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+	}
+    //graphicsRender(graphics);
+    
 }
 
 function drawStatus(){
@@ -516,12 +366,15 @@ function addScore(d){
             <img id="i-5" src="img/cubes/5.png">
             <img id="i-6" src="img/cubes/6.png">
             <img id="i-7" src="img/cubes/7.png">
+			
+            <img id="main" src="img/cubes/green.png">
+            <img id="main-head" src="img/cubes/green_head.png">
 
             <img id="reset" src="img/btn.png">
             <img id="pause" src="img/btn.png">
             <!-- <img id="reset" src="img/sm_btn.png">
             <img id="pause" src="img/sm_btn.png"> -->
-            <img id="rotate" src="img/rotate.png">
+            <img id="up" src="img/up.png">
             <img id="left" src="img/left.png">
             <img id="right" src="img/right.png">
             <img id="down" src="img/down.png">
@@ -531,7 +384,7 @@ function addScore(d){
             <img id="right" src="img/btn.png">
             <img id="down" src="img/btn.png"> -->
 
-            <img id="drop" src="img/big_btn.png">
+            <!-- <img id="drop" src="img/big_btn.png"> -->
             <img id="bg" src="img/bg.png">
         </div>
         <img class="topleft" src="img/not_supported.png">
@@ -545,15 +398,13 @@ function addScore(d){
         <img class="topleft click-through" style="display: none;" id="rules-overlay"src="img/rules.png">
 
     <script type="text/javascript">
-
 var UI_ELEMENTS = [
-    {action: 'left'  , x: 219 - 15, y: 567, w: 66, h: 66},
-    {action: 'right' , x: 287, y: 567, w: 66, h: 66},
+    {action: 'left'  , x: 204, y: 541, w: 66, h: 66},
+    {action: 'right' , x: 287, y: 541, w: 66, h: 66},
 
-    {action: 'rotate', x: 34 + 212, y: 503, w: 66, h: 66},
-    {action: 'down'  , x: 16, y: 503/* + 65*/, w: 66, h: 66},
+    {action: 'up', x: 34 + 212, y: 500, w: 66, h: 66},
+    {action: 'down', x: 34 + 212, y: 580, w: 66, h: 66},
 
-    {action: 'drop'  , x: 120 - 40, y: 538, w: 97, h: 97},
     
     {action: 'reset' , x: 157 - 1, y: 493 + 1, w: 25 * 1.1, h: 26 * 1.1},
     {action: 'pause' , x: 210 - 2, y: 493 + 1, w: 25 * 1.1, h: 26 * 1.1}
@@ -586,7 +437,7 @@ function checkUp(evt){
 		evt.preventDefault();
 		return;
 	}
-	//console.log('up');
+	console.log('up');
 	window.clearInterval(actionIntervalID);
 }
 function checkTouchUp(evt){
@@ -622,8 +473,7 @@ var actionIntervalID = '';
 var keyDownInterval = 170;
 
 function onDown(x, y){
-	//console.log('down');
-    var needUpdate = false;
+	var needUpdate = false;
     // var data = ctx.getImageData(x, y, 1, 1).data;
     // console.log(data);
     for (var i = 0; i < UI_ELEMENTS.length; i++) {
@@ -633,42 +483,17 @@ function onDown(x, y){
 
             switch(el.action){
                 case 'left': 
-					if(!paused){
-						move(-1);
-						actionIntervalID = window.setInterval(function(){
-							move(-1);
-							render();
-						}, keyDownInterval);
-					}
+					toLeft();
 				break;
                 case 'right': 
-					if(!paused){
-						move(1); 
-						actionIntervalID = window.setInterval(function(){
-							move(1);
-							render();
-						}, keyDownInterval);
-					}
+					toRight();
 				break;
-                case 'rotate': 
-					if(!paused){
-						rotate(); 
-						actionIntervalID = window.setInterval(function(){
-							rotate();
-							render();
-						}, keyDownInterval);
-					}
+                case 'up': 
+					toUp();
 				break;
                 case 'down': 
-					if(!paused){
-						down(); 
-						actionIntervalID = window.setInterval(function(){
-							down();
-							render();
-						}, keyDownInterval);
-					}
+					toDown();
 				break;
-                case 'drop': if(!paused) drop(); break;
 
                 case 'pause': togglePaused(); break;
                 case 'reset': start(true); break;
@@ -677,11 +502,7 @@ function onDown(x, y){
     }
     if(rulesOn && inRect(x, y, 340, 190, 20, 20)){
 		rulesComplete();
-	}
-	
-    if(needUpdate){
-        render();
-    }
+	}	
 }
 
 can.addEventListener('mousedown', checkDown);
