@@ -635,6 +635,7 @@ function onDown(x, y){
                 case 'left': 
 					if(!paused){
 						move(-1);
+                        window.clearInterval(actionIntervalID);
 						actionIntervalID = window.setInterval(function(){
 							move(-1);
 							render();
@@ -644,6 +645,7 @@ function onDown(x, y){
                 case 'right': 
 					if(!paused){
 						move(1); 
+                        window.clearInterval(actionIntervalID);
 						actionIntervalID = window.setInterval(function(){
 							move(1);
 							render();
@@ -653,6 +655,7 @@ function onDown(x, y){
                 case 'rotate': 
 					if(!paused){
 						rotate(); 
+                        window.clearInterval(actionIntervalID);
 						actionIntervalID = window.setInterval(function(){
 							rotate();
 							render();
@@ -662,6 +665,7 @@ function onDown(x, y){
                 case 'down': 
 					if(!paused){
 						down(); 
+                        window.clearInterval(actionIntervalID);
 						actionIntervalID = window.setInterval(function(){
 							down();
 							render();
