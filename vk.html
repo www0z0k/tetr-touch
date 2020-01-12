@@ -519,6 +519,7 @@ function addScore(d){
 
             <img id="reset" src="img/btn.png">
             <img id="pause" src="img/btn.png">
+            <img id="share" src="img/btn.png">
             <!-- <img id="reset" src="img/sm_btn.png">
             <img id="pause" src="img/sm_btn.png"> -->
             <img id="rotate" src="img/rotate.png">
@@ -547,6 +548,8 @@ function addScore(d){
     <script type="text/javascript">
 
 var UI_ELEMENTS = [
+    {action: 'share' , x: 0, y: 0, w: 66, h: 66},
+
     {action: 'left'  , x: 219 - 15, y: 567, w: 66, h: 66},
     {action: 'right' , x: 287, y: 567, w: 66, h: 66},
 
@@ -676,6 +679,7 @@ function onDown(x, y){
 
                 case 'pause': togglePaused(); break;
                 case 'reset': start(true); break;
+                case 'share': share(score); break;
             }
         }
     }
@@ -708,7 +712,7 @@ can.addEventListener('touchend', checkTouchUp);
         var url  = 'http://vk.com/share.php?';
         url += 'url='          + encodeURIComponent('https://vk.com/app7274003_315502656');
         url += '&title='       + encodeURIComponent('Тетрис, тот самый!');
-        url += '&description=' + encodeURIComponent('Я набил ' + scr '! А ты?');
+        url += '&description=' + encodeURIComponent('Я набил ' + scr + '! А ты?');
         url += '&image='       + encodeURIComponent('https://www0z0k.github.io/tetr-touch/img/share.png');
         url += '&noparse=true';
         window.open(url,'','toolbar=0,status=0,width=626,height=436');
