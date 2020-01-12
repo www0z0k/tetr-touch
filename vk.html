@@ -711,8 +711,7 @@ can.addEventListener('touchend', checkTouchUp);
     function share(scr){
         var url  = 'http://vk.com/share.php?';
         url += 'url='          + encodeURIComponent('https://vk.com/app7274003_315502656');
-        url += '&title='       + encodeURIComponent('Тетрис, тот самый!');
-        url += '&description=' + encodeURIComponent('Я набил ' + scr + '! А ты?');
+        url += '&title='       + encodeURIComponent('Тетрис, тот самый!, я набил ' + scr + '! А ты?');
         url += '&image='       + encodeURIComponent('https://www0z0k.github.io/tetr-touch/img/share.png');
         url += '&noparse=true';
         window.open(url,'','toolbar=0,status=0,width=626,height=436');
