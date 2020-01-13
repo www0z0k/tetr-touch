@@ -114,6 +114,8 @@ function moveAllAfter(next){
 }
 
 function move(){
+    if(OVER || paused)return;
+    
 	doubleState = '';
 	if(changeDir){
 		changeDir = false;
@@ -365,12 +367,7 @@ function drawScore(str, lin){
 
 var speedScoreStep = 75;
 function addScore(d){
-	if(d > 0 && Math.floor(score / speedScoreStep) != Math.floor((score + d) / speedScoreStep)){
-		++speed;
-		window.clearInterval(intervalID);
-		intervalID = window.setInterval(step, (600 - 50 * (speed - 1)));
-	}
-    score += d;
+	score += d;
     drawScore(score, lines);
 }
 
