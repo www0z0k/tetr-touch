@@ -41,25 +41,14 @@ function mobileAndTabletcheck() {
 };		
 		
 var K = 1;
-var OFFSET_X = 55;
-var OFFSET_Y = 49;
+var OFFSET_X = 58;
+var OFFSET_Y = 51;
 
-var WIDTH_IN_CELLS = 17;
-var HEIGHT_IN_CELLS = 34;
-var CELL_SIZE = 12;
+var HEIGHT_IN_CELLS = 20;
+var WIDTH_IN_CELLS = 10;
+var CELL_SIZE = 20;
 
 var score = 0;
-var speed = 1;
-var lines = 1;
-
-
-var paused = false;
-var OVER = false;
-
-var foodz = [];
-var cellz = [new Point(5, 10)];
-var dx = 1;
-var dy = 0;
 
 //point class
 function Point(x, y, color){
@@ -77,197 +66,19 @@ Point.prototype = {
 	constructor : Point	
 };
 
-var COLORS = ['i-1'];
+var COLORS = ['i-1', 'i-2', 'i-3', 'i-4', 'i-5', 'i-6', 'i-7'];
 function randomColor(){
     return COLORS[Math.floor(Math.random() * COLORS.length)];
 }
 
-function pointInArr(p, arr){
-	for(var i = 0; i < arr.length; i++){
-		if(arr[i].x == p.x && arr[i].y == p.y){
-			return i;
-		}
-	}
-	return -1;
-}
-
-function getAllEmpty(){
-	var arr = [];
-	for(var i = 0; i < WIDTH_IN_CELLS; i++){
-		for(var j = 0; j < HEIGHT_IN_CELLS; j++){
-			var p = new Point(i, j);
-			if(pointInArr(p, foodz) == -1 && pointInArr(p, cellz) == -1){
-				arr.push(p);
-			}
-		}	
-	}
-	return arr;
-}
-
-function moveAllAfter(next){
-	for(var i = 0; i < cellz.length; i++){
-		var n1 = cellz[i].clone();
-		cellz[i].x = next.x;
-		cellz[i].y = next.y;
-		next = n1;
-	}
-}
-
-function move(){
-    if(OVER || paused)return;
-    
-	doubleState = '';
-	if(changeDir){
-		changeDir = false;
-		dx = ndx;
-		dy = ndy;
-	}
-	var next = new Point(cellz[0].x + dx, cellz[0].y + dy);
-	if(next.x < 0 || next.y < 0 || next.x >= WIDTH_IN_CELLS || next.y >= HEIGHT_IN_CELLS || pointInArr(next, cellz) > -1){
-		OVER = true;
-		drawStatus();
-		return;
-	}
-	var foodIndex = pointInArr(next, foodz);
-	if(foodIndex > -1){
-		foodz.splice(foodIndex, 1);
-		cellz.push(new Point(0, 0));
-		addScore(1);
-	}
-	
-	moveAllAfter(next);
-	
-	if(foodIndex == -1 && foodz.length == 0){
-		//spawn food
-		var avails = getAllEmpty();
-		var rnd = avails[Math.floor(Math.random() * avails.length)];
-		foodz.push(new Point(rnd.x, rnd.y, randomColor()));
-	}
-	
-	render();
-}
-
-function togglePaused(){
-    paused = !paused;
-    drawStatus();
-}
-
-function step(){
-    if(OVER || paused){
-        return;
-    }
-	
-    move();
-}
-
 var rulesOn = false;
 //var glass;
-var intervalID = '';
-function start(re){    
-    window.clearInterval(intervalID);
-
-	if(!re && !mobileAndTabletcheck()){
-		document.getElementById('rules-overlay').style.display = 'block';
-		rulesOn = true;
-	}else{
-		rulesComplete();
-	}	
-}
-
-function rulesComplete(){
-	document.getElementById('rules-overlay').style.display = 'none';
-	rulesOn = false;
-	paused = false;
-	OVER = false;
-	drawStatus();
-	lines = 0;
-	speed = 1;
-	addScore(-score);
-	intervalID = window.setInterval(step, 450);
-	
-	foodz = [];
-	cellz = [new Point(5, 10)];
-
-	dx = 1;
-	dy = 0;
-	ndx = 0;
-	ndy = 0;
-	changeDir = false;
-	move();
-}
 
 
 /**
  * INPUT
  */
-var ndx = 0;
-var ndy = 0;
-var changeDir;
 
-var doubleState = '';
-
-function toLeft(){
-	if(dy == 0 && dx == 1)return;
-	ndx = -1;
-	ndy = 0;
-	changeDir = true;
-	if(doubleState == 'left'){
-		move();
-	}
-	doubleState = 'left';
-}
-function toRight(){
-	if(dy == 0 && dx == -1)return;
-	ndx = 1;
-	ndy = 0;
-	changeDir = true;
-	if(doubleState == 'right'){
-		move();
-	}
-	doubleState = 'right';
-}
-function toUp(){
-	if(dx == 0 && dy == 1)return;
-	ndx = 0;
-	ndy = -1;
-	changeDir = true;
-	if(doubleState == 'up'){
-		move();
-	}
-	doubleState = 'up';
-}
-function toDown(){
-	if(dx == 0 && dy == -1)return;
-	ndx = 0;
-	ndy = 1;
-	changeDir = true;
-	if(doubleState == 'up'){
-		move();
-	}
-	doubleState = 'up';
-}
-function handleKey(evt){
-  //console.log(evt);
-    switch(evt.keyCode){
-        case 37://left
-            toLeft();
-        break;
-        case 39://right
-            toRight();
-        break;
-        case 38://up
-            toUp();
-        break;
-        case 40://down
-            toDown();
-        break;
-        case 27://escape
-            togglePaused();
-        break;
-    }
-    evt.preventDefault();
-    evt.stopImmediatePropagation();
-}
 /**
  * RENDER
  */
@@ -311,9 +122,8 @@ function drawStatus(){
     document.getElementById('over-overlay').style.display = OVER ? 'block' : 'none';
 }
 
-function drawScore(str, lin){
+function drawScore(str){
     str = str == 0 ? '-' : str;
-    lin = lin == 0 ? '-' : lin;
     var sSize = 18;
     var sYOff = 0;
     switch(str.toString().length){
@@ -329,59 +139,37 @@ function drawScore(str, lin){
             sYOff = -3;
         break;          
     }
-    var lSize = 18;
-    var lYOff = 0;
-    switch(lin.toString().length){
-        case 3:
-            lSize = 16;
-        break;
-        case 4:
-            lSize = 13;
-            lYOff = -1.5;
-        break;
-        case 5:
-            lSize = 10;
-            lYOff = -3;
-        break;        
-    }
     
-	var baseY = 217;
-	
     var canvas = document.getElementById("canvas");
     var ctx = canvas.getContext("2d");
-    ctx.clearRect(OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 1, baseY + 14, 150, -35);
-    ctx.clearRect(OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 1, baseY + 14 + 75, 150, -35);
-    ctx.clearRect(OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 1, baseY + 14 + 150, 150, -35);
+    ctx.clearRect(OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 1, 250, 150, -35);
 
     ctx.font = sSize + "px raptor";
     ctx.fillStyle = '#000000';
     var sOff = -ctx.measureText(str).width / 2;
-    ctx.fillText(str, OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 26 + sOff, baseY + sYOff); 
-
-    ctx.font = "18px raptor";
-    var spOff = -ctx.measureText(speed).width / 2;
-    ctx.fillText(speed, OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 26 + spOff, baseY + 75);
-	
-    ctx.font = lSize + "px raptor";
-    var lOff = -ctx.measureText(lin).width / 2;
-    ctx.fillText(lin, OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 26 + lOff, baseY + lYOff + 150);
+    ctx.fillText(str, OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 26 + sOff, 236 + sYOff);   
 }
 
-var speedScoreStep = 75;
 function addScore(d){
-	score += d;
-    drawScore(score, lines);
+    score += d;
+    drawScore(score);
 }
 
         </script>
     </head>
-    <body onload="init()" onkeydown="handleKey(event)">
+    <body onload="init()" >
         <!-- LOAD ASSETS HERE -->
         <div class="hidden">
-            <img id="i-1" src="img/cubes/food.png">
+            <img id="i-1" src="img/cubes/1.png">
+            <img id="i-2" src="img/cubes/2.png">
+            <img id="i-3" src="img/cubes/3.png">
+            <img id="i-4" src="img/cubes/4.png">
+            <img id="i-5" src="img/cubes/5.png">
+            <img id="i-6" src="img/cubes/6.png">
+            <img id="i-7" src="img/cubes/7.png">
 			
-            <img id="main" src="img/cubes/snake.png">
-            <img id="main-head" src="img/cubes/snake-head.png">
+            <img id="main" src="img/cubes/green.png">
+            <img id="main-head" src="img/cubes/green_head.png">
 
             <img id="reset" src="img/btn.png">
             <img id="pause" src="img/btn.png">
@@ -398,7 +186,7 @@ function addScore(d){
             <img id="down" src="img/btn.png"> -->
 
             <!-- <img id="drop" src="img/big_btn.png"> -->
-            <img id="bg" src="img/snake-bg.png">
+            <img id="bg" src="img/ships-bg.png">
         </div>
         <img class="topleft" src="img/not_supported.png">
         <!-- <img class="topleft" src="img/full.png"> -->
@@ -412,7 +200,7 @@ function addScore(d){
 
     <script type="text/javascript">
 var UI_ELEMENTS = [
-    {action: 'left'  , x: 204, y: 541 - 7, w: 66, h: 66},
+    /*{action: 'left'  , x: 204, y: 541 - 7, w: 66, h: 66},
     {action: 'right' , x: 287, y: 541 - 7, w: 66, h: 66},
 
     {action: 'up', x: 34 + 212, y: 500 - 7, w: 66, h: 66},
@@ -420,7 +208,7 @@ var UI_ELEMENTS = [
 
     
     {action: 'reset' , x: 158, y: 477, w: 25 * 1.1, h: 26 * 1.1},
-    {action: 'pause' , x: 210, y: 477, w: 25 * 1.1, h: 26 * 1.1}
+    {action: 'pause' , x: 210, y: 477, w: 25 * 1.1, h: 26 * 1.1}*/
 ];
 
 
@@ -436,13 +224,12 @@ function init(){
     for (var i = 0; i < UI_ELEMENTS.length; i++) {
         ctx.drawImage(getTexture(UI_ELEMENTS[i].action), UI_ELEMENTS[i].x, UI_ELEMENTS[i].y, UI_ELEMENTS[i].w, UI_ELEMENTS[i].h);
     }
-    setTimeout(function(){drawScore(0, 0)}, 250);
+    //setTimeout(function(){drawScore(0, 0)}, 250);
 
     var canBG = document.getElementById('canvas-bg');
     var ctxBG = canBG.getContext('2d');
     ctxBG.drawImage(getTexture('bg'), 0, 0);
 
-    start();
 }
 
 function checkUp(evt){
@@ -450,12 +237,9 @@ function checkUp(evt){
 		evt.preventDefault();
 		return;
 	}
-	console.log('up');
-	window.clearInterval(actionIntervalID);
 }
 function checkTouchUp(evt){
 	evt.preventDefault();
-	window.clearInterval(actionIntervalID);
 }
 
 function checkTouchDown(evt){
@@ -486,7 +270,6 @@ var actionIntervalID = '';
 var keyDownInterval = 170;
 
 function onDown(x, y){
-	var needUpdate = false;
     // var data = ctx.getImageData(x, y, 1, 1).data;
     // console.log(data);
     for (var i = 0; i < UI_ELEMENTS.length; i++) {
@@ -515,7 +298,12 @@ function onDown(x, y){
     }
     if(rulesOn && inRect(x, y, 340, 190, 20, 20)){
 		rulesComplete();
-	}	
+	}
+	if(inRect(x, y, OFFSET_X, OFFSET_Y, OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE, OFFSET_Y + HEIGHT_IN_CELLS * CELL_SIZE)){
+		var cx = Math.floor((x - OFFSET_X) / CELL_SIZE);
+		var cy = Math.floor((y - OFFSET_Y) / CELL_SIZE);
+		console.log(cx, cy);
+	}
 }
 
 can.addEventListener('mousedown', checkDown);
