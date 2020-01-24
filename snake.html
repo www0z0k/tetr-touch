@@ -465,14 +465,14 @@ var can = document.getElementById('canvas');
 var ctx = can.getContext('2d');
 var rect = can.getBoundingClientRect();
 function init(){
-    for (var i = 0; i < UI_ELEMENTS.length; i++) {
-        ctx.drawImage(getTexture(UI_ELEMENTS[i].action), UI_ELEMENTS[i].x, UI_ELEMENTS[i].y, UI_ELEMENTS[i].w, UI_ELEMENTS[i].h);
-    }
-    setTimeout(function(){drawScore(0, 0)}, 250);
-
     var canBG = document.getElementById('canvas-bg');
     var ctxBG = canBG.getContext('2d');
     ctxBG.drawImage(getTexture('bg'), 0, 0);
+
+    for (var i = 0; i < UI_ELEMENTS.length; i++) {
+        ctxBG.drawImage(getTexture(UI_ELEMENTS[i].action), UI_ELEMENTS[i].x, UI_ELEMENTS[i].y, UI_ELEMENTS[i].w, UI_ELEMENTS[i].h);
+    }
+    setTimeout(function(){drawScore(0, 0)}, 250);
 
     start();
 }
