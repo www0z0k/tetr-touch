@@ -41,12 +41,12 @@ function mobileAndTabletcheck() {
 };		
 		
 var K = 1;
-var OFFSET_X = 55;
-var OFFSET_Y = 49;
+var OFFSET_Y = 1.5;
+var OFFSET_X = 25.5;
 
-var WIDTH_IN_CELLS = 17;
-var HEIGHT_IN_CELLS = 34;
-var CELL_SIZE = 12;
+var WIDTH_IN_CELLS = 15;
+var HEIGHT_IN_CELLS = 26;
+var CELL_SIZE = 20.6;
 
 var score = 0;
 var speed = 1;
@@ -57,7 +57,7 @@ var paused = false;
 var OVER = false;
 
 var foodz = [];
-var cellz = [new Point(5, 10)];
+var cellz = [new Point(5, 10), new Point(4, 10)];
 var dx = 1;
 var dy = 0;
 
@@ -123,7 +123,9 @@ function move(){
 		dy = ndy;
 	}
 	var next = new Point(cellz[0].x + dx, cellz[0].y + dy);
-	if(next.x < 0 || next.y < 0 || next.x >= WIDTH_IN_CELLS || next.y >= HEIGHT_IN_CELLS || pointInArr(next, cellz) > -1){
+
+    var toTest = cellz.slice(0, cellz.length - 1);
+	if(next.x < 0 || next.y < 0 || next.x >= WIDTH_IN_CELLS || next.y >= HEIGHT_IN_CELLS || pointInArr(next, toTest) > -1){
 		OVER = true;
 		drawStatus();
 		return;
@@ -186,7 +188,7 @@ function rulesComplete(){
 	intervalID = window.setInterval(step, 450);
 	
 	foodz = [];
-	cellz = [new Point(5, 10)];
+	cellz = [new Point(5, 10), new Point(4, 10)];
 
 	dx = 1;
 	dy = 0;
@@ -290,17 +292,40 @@ function graphicsRender(gr){
     gr.fill();
     // gr.stroke();
 }
+
+
 function render(){
     //RENDER
     var can = document.getElementById('canvas');
     var graphics = can.getContext('2d');
-    graphics.clearRect(OFFSET_X, OFFSET_Y, WIDTH_IN_CELLS * CELL_SIZE, HEIGHT_IN_CELLS * CELL_SIZE);
+    graphics.clearRect(OFFSET_X - 20, OFFSET_Y - 2, WIDTH_IN_CELLS * CELL_SIZE + 40, HEIGHT_IN_CELLS * CELL_SIZE + 22);
     
 	for(var i = 0; i < cellz.length; i++){
-        graphics.drawImage(getTexture(i == 0 ? 'main-head' : 'main'), OFFSET_X + cellz[i].x * CELL_SIZE, OFFSET_Y + cellz[i].y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        if(i == cellz.length - 1){
+            graphics.drawImage(getTexture('main-tail'), 
+                                OFFSET_X + cellz[i].x * CELL_SIZE - CELL_SIZE, 
+                                OFFSET_Y + cellz[i].y * CELL_SIZE - CELL_SIZE, 
+                                62, 
+                                63
+                            );
+        }else{
+            graphics.drawImage(getTexture(i == 0 ? 'main-head' : 'main'), 
+                                    OFFSET_X + cellz[i].x * CELL_SIZE - CELL_SIZE / 2, 
+                                    OFFSET_Y + cellz[i].y * CELL_SIZE - CELL_SIZE / 2 - 3, 
+                                    CELL_SIZE * 2, 
+                                    CELL_SIZE * 2
+                                );
+        }
 	}
+
+
 	for(var i = 0; i < foodz.length; i++){
-        graphics.drawImage(getTexture(foodz[i].color), OFFSET_X + foodz[i].x * CELL_SIZE, OFFSET_Y + foodz[i].y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        graphics.drawImage(getTexture(foodz[i].color), 
+                OFFSET_X + foodz[i].x * CELL_SIZE - CELL_SIZE / 2, 
+                OFFSET_Y + foodz[i].y * CELL_SIZE - CELL_SIZE / 2, 
+                CELL_SIZE * 2, 
+                CELL_SIZE * 2
+            );
 	}
     //graphicsRender(graphics);
     
@@ -312,6 +337,7 @@ function drawStatus(){
 }
 
 function drawScore(str, lin){
+    console.log('score ', str);
     str = str == 0 ? '-' : str;
     lin = lin == 0 ? '-' : lin;
     var sSize = 18;
@@ -356,15 +382,15 @@ function drawScore(str, lin){
     ctx.font = sSize + "px raptor";
     ctx.fillStyle = '#000000';
     var sOff = -ctx.measureText(str).width / 2;
-    ctx.fillText(str, OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 26 + sOff, baseY + sYOff); 
+    // ctx.fillText(str, OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 26 + sOff, baseY + sYOff); 
 
     ctx.font = "18px raptor";
     var spOff = -ctx.measureText(speed).width / 2;
-    ctx.fillText(speed, OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 26 + spOff, baseY + 75);
+    // ctx.fillText(speed, OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 26 + spOff, baseY + 75);
 	
     ctx.font = lSize + "px raptor";
     var lOff = -ctx.measureText(lin).width / 2;
-    ctx.fillText(lin, OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 26 + lOff, baseY + lYOff + 150);
+    // ctx.fillText(lin, OFFSET_X + WIDTH_IN_CELLS * CELL_SIZE + 26 + lOff, baseY + lYOff + 150);
 }
 
 var speedScoreStep = 75;
@@ -382,22 +408,26 @@ function addScore(d){
 			
             <img id="main" src="img/cubes/snake.png">
             <img id="main-head" src="img/cubes/snake-head.png">
+            <img id="main-tail" src="img/cubes/snake-tail.png">
 
             <img id="reset" src="img/btn.png">
-            <img id="pause" src="img/btn.png">
+            <img id="pause" src="img/snake-pause.png">
             <!-- <img id="reset" src="img/sm_btn.png">
             <img id="pause" src="img/sm_btn.png"> -->
-            <img id="up" src="img/up.png">
-            <img id="left" src="img/left.png">
-            <img id="right" src="img/right.png">
-            <img id="down" src="img/down.png">
+            <img id="up" src="img/snake-up.png">
+            <img id="left" src="img/snake-left.png">
+            <img id="right" src="img/snake-right.png">
+            <img id="down" src="img/snake-down.png">
 
+            <img id="bonus" src="img/snake-bonus.png">
            <!--  <img id="rotate" src="img/btn.png">
             <img id="left" src="img/btn.png">
             <img id="right" src="img/btn.png">
             <img id="down" src="img/btn.png"> -->
 
             <!-- <img id="drop" src="img/big_btn.png"> -->
+
+            <!-- <img id="bg" src="img/snake-bg.jpg"> -->
             <img id="bg" src="img/snake-bg.png">
         </div>
         <img class="topleft" src="img/not_supported.png">
@@ -412,15 +442,17 @@ function addScore(d){
 
     <script type="text/javascript">
 var UI_ELEMENTS = [
-    {action: 'left'  , x: 204, y: 541 - 7, w: 66, h: 66},
-    {action: 'right' , x: 287, y: 541 - 7, w: 66, h: 66},
+    {action: 'left'  , x: 137, y: 596.5, w: 43, h: 38},
+    {action: 'right' , x: 241, y: 596.5, w: 43, h: 38},
 
-    {action: 'up', x: 34 + 212, y: 500 - 7, w: 66, h: 66},
-    {action: 'down', x: 34 + 212, y: 580 - 7, w: 66, h: 66},
+    {action: 'up', x: 188, y: 550, w: 44, h: 38},
+    {action: 'down', x: 188, y: 598, w: 44, h: 38},
 
     
-    {action: 'reset' , x: 158, y: 477, w: 25 * 1.1, h: 26 * 1.1},
-    {action: 'pause' , x: 210, y: 477, w: 25 * 1.1, h: 26 * 1.1}
+    {action: 'pause' , x: 15, y: 543, w: 39 / 2, h: 39 / 2},
+
+    {action: 'bonus' , x: 24, y: 567, w: 73, h: 74}
+    // {action: 'reset' , x: 158, y: 477, w: 25 * 1.1, h: 26 * 1.1},
 ];
 
 
