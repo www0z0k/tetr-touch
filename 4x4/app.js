@@ -38,6 +38,7 @@ function drawTable(){
 
 function picClicked(el){
 	if(!hidden || errmode)return;
+	if(el.getAttribute('src') != question)return;
 
 	var src = el.getAttribute('data-id');
 	var index = el.getAttribute('id');
