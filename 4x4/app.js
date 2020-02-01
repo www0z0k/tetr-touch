@@ -6,11 +6,14 @@ var reset = getByID('reset');
 
 var items = [];
 var hidden = false;
+var errmode = false;
+
 var clickedSrc = '';
 var clickedID = '';
 
 function restart(){
 	hidden = false;
+	errmode = false;
 	shuffle.style.display = 'inline';
 	hide.style.display = 'inline';
 
@@ -34,7 +37,7 @@ function drawTable(){
 }
 
 function picClicked(el){
-	if(!hidden)return;
+	if(!hidden || errmode)return;
 
 	var src = el.getAttribute('data-id');
 	var index = el.getAttribute('id');
@@ -57,12 +60,14 @@ function picClicked(el){
 
 			clickedSrc = '';
 			clickedID = '';
+			errmode = true;
 			
 			el.setAttribute('src', error);
-			other.setAttribute('src', error);
+			other && other.setAttribute('src', error);
 			window.setTimeout(() => {
 				el.setAttribute('src', question);
-				other.setAttribute('src', question);
+				other && other.setAttribute('src', question);
+				errmode = false;
 			}, 220);
 		}
 	}
