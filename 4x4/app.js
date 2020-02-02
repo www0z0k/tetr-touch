@@ -18,7 +18,7 @@ function restart(){
 	shuffle.style.display = 'inline';
 	hide.style.display = 'inline';
 
-	clickedID = clicked = '';
+	clickedID = clickedSrc = '';
 
 	drawTable();
 }
