@@ -90,9 +90,10 @@ getQueryArray('.to-play').forEach((el) => {
 });
 
 mode.addEventListener('click', () => {
-	if(!hidden)return;
 	hardmode = !hardmode;
 	mode.innerHTML = hardmode ? 'hard' : 'easy';
+	
+	if(!hidden)return;
 	
 	if(hardmode && clickedID){
 		let other = getByID(clickedID);
