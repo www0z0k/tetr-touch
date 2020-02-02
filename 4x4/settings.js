@@ -11,3 +11,5 @@ var setPics = [
 
 var question = 'res/q.jpg';
 var error = 'res/qerr.jpg';
+
+var hardmode = true;

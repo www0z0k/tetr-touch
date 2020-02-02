@@ -3,6 +3,7 @@ var field = getByID('field');
 var shuffle = getByID('shuffle');
 var hide = getByID('hide');
 var reset = getByID('reset');
+var mode = getByID('mode');
 
 var items = [];
 var hidden = false;
@@ -59,15 +60,21 @@ function picClicked(el){
 		}else{//wrong pic
 			let other = getByID(clickedID);
 
-			clickedSrc = '';
-			clickedID = '';
 			errmode = true;
 			
-			el.setAttribute('src', error);
-			other && other.setAttribute('src', error);
+			el.setAttribute('src', hardmode ? error : src);
+			if(hardmode){
+				clickedSrc = '';
+				clickedID = '';
+				other && other.setAttribute('src', error);
+			}
+
 			window.setTimeout(() => {
 				el.setAttribute('src', question);
-				other && other.setAttribute('src', question);
+
+				if(hardmode){
+					other && other.setAttribute('src', question);
+				}
 				errmode = false;
 			}, 220);
 		}
@@ -80,6 +87,19 @@ reset.addEventListener('click', () => { restart(); });
 
 getQueryArray('.to-play').forEach((el) => {
   el.addEventListener('click', () => { restart(); });
+});
+
+mode.addEventListener('click', () => {
+	if(!hidden)return;
+	hardmode = !hardmode;
+	mode.innerHTML = hardmode ? 'hard' : 'easy';
+	
+	if(hardmode && clickedID){
+		let other = getByID(clickedID);
+		clickedSrc = '';
+		clickedID = '';
+		other && other.setAttribute('src', question);
+	}
 });
 
 shuffle.addEventListener('click', () => {
