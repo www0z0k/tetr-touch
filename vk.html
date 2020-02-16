@@ -111,6 +111,9 @@ function checkFullLines(){
     }
     render();
     if(toKill.length){
+
+        playNext(toKill.length + 'line');
+
         lines += toKill.length;
         var deltaScore = 1 * toKill.length + (toKill.length - 1) * (toKill.length - 1) * 1;
         addScore(deltaScore);
@@ -404,6 +407,8 @@ function render(){
         }
         graphicsRender(graphics);
     }
+
+    animateCharacter();
 }
 
 var nextOffsets = {
@@ -499,7 +504,16 @@ function addScore(d){
 		++speed;
 		window.clearInterval(intervalID);
 		intervalID = window.setInterval(step, (600 - 50 * (speed - 1)));
+        
+        playNext('speedup');
 	}
+
+    if(score < 100 && score + d > 100){
+        playNext('100pts');
+    }else if(score < 500 && score + d > 500){
+        playNext('500pts');
+    }
+
     score += d;
     drawScore(score, lines);
 }
@@ -526,6 +540,7 @@ function addScore(d){
             <img id="left" src="img/left.png">
             <img id="right" src="img/right.png">
             <img id="down" src="img/down.png">
+            <img id="shop_btn" src="img/hamster_btn.png">
 
            <!--  <img id="rotate" src="img/btn.png">
             <img id="left" src="img/btn.png">
@@ -534,11 +549,25 @@ function addScore(d){
 
             <img id="drop" src="img/big_btn.png">
             <img id="bg" src="img/bg.png">
+
+            <!-- ANIMATIONS -->
+            <img id="idle" src="emotions/idle.png">
+            
+            <img id="1line" src="emotions/1line.png">
+            <img id="2line" src="emotions/2line.png">
+            <img id="3line" src="emotions/3line.png">
+            <img id="4line" src="emotions/4line.png">
+            
+            <img id="100pts" src="emotions/100pts.png">
+            <img id="500pts" src="emotions/500pts.png">
+
+            <img id="speedup" src="emotions/speedup.png">
         </div>
         <img class="topleft" src="img/not_supported.png">
         <img class="topleft" src="img/full.png">
         <canvas class="topleft" width="360" height="640" id="canvas-bg"></canvas>
         <canvas class="topleft" width="360" height="640" id="canvas"></canvas>
+        <canvas class="topleft click-through" width="360" height="640" id="canvas-fx"></canvas>
         <img class="topleft click-through" style="display: none;" id="paused-overlay" src="img/paused.png">
         <img class="topleft click-through" style="display: none;" id="over-overlay"src="img/over.png">
         <img class="topleft click-through" style="display: none;" id="over-share-overlay"src="img/over-share.png">
@@ -555,6 +584,10 @@ var UI_ELEMENTS = [
 
     {action: 'rotate', x: 243, y: 500, w: 66, h: 66},
     {action: 'down'  , x: 20, y: 509, w: 66, h: 66},
+    
+    // {action: 'shop_btn'  , x: 291, y: 463, w: 56, h: 56},
+    {action: 'shop_btn'  , x: 164, y: 520, w: 56, h: 56},
+    // {action: 'shop_btn'  , x: 10, y: 580, w: 66, h: 66},
 
     {action: 'drop'  , x: 78, y: 539, w: 97, h: 97},
     
@@ -568,6 +601,9 @@ window.onresize = function(){
 };
 K = 640 / window.innerHeight;
 
+var canFX = document.getElementById('canvas-fx');
+var fx = canFX.getContext('2d');
+
 var can = document.getElementById('canvas');
 var ctx = can.getContext('2d');
 var rect = can.getBoundingClientRect();
@@ -580,6 +616,8 @@ function init(){
     var canBG = document.getElementById('canvas-bg');
     var ctxBG = canBG.getContext('2d');
     ctxBG.drawImage(getTexture('bg'), 0, 0);
+
+    animationIntervalID = window.setInterval(animateCharacter, 50);
 
     start();
 }
@@ -621,6 +659,7 @@ function inRect(x, y, rx, ry, rw, rh){
     return (x > rx && x < rx + rw && y > ry && y < ry + rh);  
 }
 
+var animationIntervalID = '';
 var actionIntervalID = '';
 var keyDownInterval = 170;
 
@@ -698,6 +737,51 @@ can.addEventListener('mouseup', checkUp);
 can.addEventListener('touchstart', checkTouchDown);
 can.addEventListener('touchend', checkTouchUp);
 
+var animStep = 0;
+var animStepsTotal = 12;
+var halfWay = animStepsTotal / 2;
+
+var fromState = 'idle';
+var toState = 'idle';
+
+var nextStates = [];
+
+function animateCharacter(){
+    fx.clearRect(73, 460, 100, 100);
+    if(!animationInProgress()){
+        fx.globalAlpha = 1;
+        fx.drawImage(getTexture(fromState), 73, 460, 243 / 3, 242 / 3);
+    }else{
+        var progress = animStep <= halfWay ? animStep / halfWay : (animStepsTotal - animStep) / halfWay;
+        fx.globalAlpha = 1 - progress;
+        fx.drawImage(getTexture(fromState), 73, 460, 243 / 3, 242 / 3);
+        fx.globalAlpha = progress;
+        fx.drawImage(getTexture(toState), 73, 460, 243 / 3, 242 / 3);
+
+        if(animStep == animStepsTotal){
+            animationComplete();
+        }
+        ++animStep;
+    }
+}
+
+function playNext(state){
+    nextStates.push(state);
+    if(!animationInProgress()){
+        toState = nextStates.shift();        
+    }
+}
+function animationInProgress(){
+    return toState != fromState;
+}
+function animationComplete(){
+    animStep = 0;
+    if(nextStates.length){
+        toState = nextStates.shift();
+    }else{
+        toState = 'idle';
+    }
+}
 
 
     </script>
