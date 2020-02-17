@@ -508,10 +508,10 @@ function addScore(d){
         playNext('speedup');
 	}
 
-    if(score < 100 && score + d > 100){
-        playNext('100pts');
-    }else if(score < 500 && score + d > 500){
+    if(score < 500 && score + d > 500){
         playNext('500pts');
+    }else if(Math.floor(score / 100) != Math.floor(score + d)){
+        playNext('100pts');
     }
 
     score += d;
