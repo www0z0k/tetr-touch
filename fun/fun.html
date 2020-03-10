@@ -22,6 +22,9 @@
     width: calc(100vh * 0.6);
     height: calc(100vh * 0.6); 
   }
+  tr, td{
+    border: 1px solid black;
+  }
   
   .file-target { 
     border: 3px dashed #ccc;
@@ -46,8 +49,9 @@
   <p id="status">Этот браузер сломался, откройте меня лучше в хроме</p>
   <button class="to-start">back</button>
   <button class="to-play">play</button>
-  <button class="save-pics">save</button>
-  <div id="settings-table"></div>  
+  <button id="save-pics">save</button>
+  <table id="settings-table"></table> 
+  <!-- <div id="settings-table"></div>  -->
 </div>
 <script type="text/javascript" src="settings.js"></script>
 
