@@ -24,12 +24,22 @@ function createSettingsTableStr(index, img, name, nameID){
   return `<td>${name ? createEditableSpan(name, nameID, 'editable') : ''}</td><td><img data-id="${index}" class="file-target icon" src="${img}"</img></td>`;
 }
 
-function fillQuestionsForm(arr){
-  let str = '';
+function fillQuestionsForm(arr, tb){
   for (let i = 0; i < arr.length; i++) {
-    str += `<tr><td>${createEditableSpan(arr[i].text, 'text-' + i, 'task', i)}</td><td>bomb<input type="checkbox" data-index="${i}" checked="${arr[i].bomb}"></input></td></tr>`;
+    // str += `<tr><td>${createEditableSpan(arr[i].text, 'text-' + i, 'task', i)}</td><td>bomb<input type="checkbox" data-index="${i}" checked="${arr[i].bomb}"></input></td></tr>`;
+    let row = document.createElement('tr');
+    row.innerHTML = `<td>${createEditableSpan(arr[i].text, 'text-' + i, 'task', i)}</td>`;
+    let td = document.createElement('td');
+    td.innerHTML = 'bomb';
+    let input = document.createElement('input');
+    input.setAttribute('type', 'checkbox');
+    input.setAttribute('data-index', i);
+    input.checked = arr[i].bomb;
+
+    td.appendChild(input);
+    row.appendChild(td);
+    tb.appendChild(row);
   }
-  return str;
 }
 
 function updatePics(){
@@ -42,8 +52,18 @@ function updatePics(){
   tb.innerHTML += '<tr>' + createSettingsTableStr('t2Pic', config['t2Pic'], config['team2'], 'team2') + '</tr>';
   tb.innerHTML += '<tr><td>рубашка  :</td></tr>';
   tb.innerHTML += '<tr>' + createSettingsTableStr('qPic', config['qPic']) + '</tr>';
+  tb.innerHTML += '<tr><td>в процессе  :</td></tr>';
+  tb.innerHTML += '<tr>' + createSettingsTableStr('pending', config['pending']) + '</tr>';
+  tb.innerHTML += '<tr><td>бомба  :</td></tr>';
+  tb.innerHTML += '<tr>' + createSettingsTableStr('bomb', config['bomb']) + '</tr>';
+  tb.innerHTML += '<tr><td>успех  :</td></tr>';
+  tb.innerHTML += '<tr>' + createSettingsTableStr('ok', config['ok']) + '</tr>';
+  tb.innerHTML += '<tr><td>провал  :</td></tr>';
+  tb.innerHTML += '<tr>' + createSettingsTableStr('no', config['no']) + '</tr>';
+  
   tb.innerHTML += '<tr><td>задания  :</td></tr>';
-  tb.innerHTML += fillQuestionsForm(config.questions);  
+  // tb.innerHTML += fillQuestionsForm(config.questions);
+  fillQuestionsForm(config.questions, tb);
   
 
   getQueryArray('.editable').forEach((span) => {
@@ -52,6 +72,12 @@ function updatePics(){
 
   getQueryArray('.task').forEach((span) => {
     makeEditableTask(span);
+  });
+
+  getQueryArray('checkbox').forEach((box) => {
+    box.onclick = function(e){
+      config.questions[this.getAttribute('data-index')].bomb = this.checked;
+    }
   });
 
   getQueryArray('.file-target').forEach((holder) => {
@@ -68,6 +94,7 @@ function updatePics(){
           reader = new FileReader();
       reader.onload = function (event) {
         config[id] = event.target.result;
+        console.log(event.target.result);
         updatePics();
       };
       reader.readAsDataURL(file);
@@ -151,5 +178,6 @@ if (typeof window.FileReader === 'undefined') {
 
 
 getByID('save-pics').onclick = function(){
-  download(JSON.stringify(config), Date.now() + '.js', '.js');
+  download(tpl.split('%JSON%').join(JSON.stringify(config)), Date.now() + '.html', '.html');
 }
+
