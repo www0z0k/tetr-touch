@@ -20,13 +20,12 @@ function getQuery(qs, pNode){
   pNode = pNode || document;
   return pNode.querySelectorAll(qs);
 }
-
 function getQueryArray(qs, pNode){
   return Array.prototype.slice.call(getQuery(qs, pNode));
 }
 
 var state = 'start';
-var allStates = ['start', 'settings', 'play'];
+var allStates = ['start', 'settings'];
 
 function setState(val){
   if(allStates.indexOf(val) == -1) return;
@@ -43,4 +42,4 @@ for (var i = 0; i < allStates.length; i++) {
   });
 }
 
-setState('start');
+setState('settings');

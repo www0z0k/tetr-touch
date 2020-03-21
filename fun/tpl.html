@@ -117,8 +117,8 @@ HTMLElement.prototype.hide = function(){
   }
 
   function applyScoreAndPassTurn(score, success, isBomb){
-    let ds1 = turnOwner == 1 ? (success ? score : (isBomb ? -score : 0)) : (success ? 0 : (isBomb ? score : 0));
-    let ds2 = turnOwner == 2 ? (success ? score : (isBomb ? -score : 0)) : (success ? 0 : (isBomb ? score : 0));
+    let ds1 = turnOwner == 1 ? (success ? (isBomb ? 0 : score) : (isBomb ? -score : 0)) : 0;
+    let ds2 = turnOwner == 2 ? (success ? (isBomb ? 0 : score) : (isBomb ? -score : 0)) : 0;
     updateScores(ds1, ds2);
     
     getByID('img-' + current.index).setAttribute('src', success ? config.ok : config.no);

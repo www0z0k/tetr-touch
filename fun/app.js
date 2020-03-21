@@ -81,39 +81,3 @@ function picClicked(el){
 	}
 }
 
-
-
-reset.addEventListener('click', () => { restart(); });
-
-getQueryArray('.to-play').forEach((el) => {
-  el.addEventListener('click', () => { restart(); });
-});
-
-mode.addEventListener('click', () => {
-	hardmode = !hardmode;
-	mode.innerHTML = hardmode ? 'hard' : 'easy';
-	
-	if(!hidden)return;
-	
-	if(hardmode && clickedID){
-		let other = getByID(clickedID);
-		clickedSrc = '';
-		clickedID = '';
-		other && other.setAttribute('src', question);
-	}
-});
-
-shuffle.addEventListener('click', () => {
-	if(hidden)return;
-	drawTable();
-});
-
-hide.addEventListener('click', () => {
-	hidden = true;
-	shuffle.style.display = 'none';
-	hide.style.display = 'none';
-
-	getQueryArray('.pic', field).forEach((el) => {
-		el.setAttribute('src', question);
-	});
-});
